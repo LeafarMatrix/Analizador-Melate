@@ -1,0 +1,4 @@
+ ```text
+    *.class
+    historial_jugadas_melate.txt
+    .DS_Store
