@@ -190,14 +190,20 @@ public class AnalizadorMelate {
         boolean decadasSanas = conteoDecadas.values().stream().allMatch(v -> v <= 3);
         boolean termSanas = conteoTerminaciones.values().stream().allMatch(v -> v <= 2);
 
-        // AJUSTE RGG 18/03/2026
-        return (suma >= 140 && suma <= 210) && // El rango 140-210 es el "sweet spot"
-               (repetidosAnterior <= 1) &&      // No repetir más de 1 del sorteo anterior
+     // REGLA DE CONSECUTIVOS ACTUALIZADA
+        // consecutivos == 1 -> Un par (ej. 30, 31)
+        // consecutivos == 2 -> Dos pares (ej. 12, 13 y 40, 41) O un trío (ej. 12, 13, 14)
+        boolean tieneConsecutivosInteresantes = (consecutivos >= 1 && consecutivos <= 2);
+
+        return (suma >= 140 && suma <= 210) && 
+               (repetidosAnterior <= 1) &&      
                (pares >= 2 && pares <= 4) && 
-               (consecutivos >= 1) &&           // CAMBIO: Obliga a tener al menos 1 consecutivo
+               tieneConsecutivosInteresantes && // <--- Cambio aquí
                (conteoDecadas.size() >= 3) && 
                decadasSanas && termSanas && 
-               (totalPrimos >= 1 && totalPrimos <= 2); // Bajamos a max 2 primos (frecuencia común);
+               (totalPrimos >= 1 && totalPrimos <= 2);
+        
+       
     }
 
     private static void exportarSugerencia(String contenido) {
