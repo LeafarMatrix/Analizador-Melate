@@ -4,7 +4,7 @@ import java.util.stream.Collectors;
 
 public class AnalizadorMelate {
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
         String archivoRuta = "historico_melate.txt";
         File file = new File(archivoRuta);
 
@@ -12,27 +12,28 @@ public class AnalizadorMelate {
             System.err.println("Error: No se encuentra 'historico_melate.txt'");
         } else {
             System.out.println("--- INICIANDO ANÁLISIS DINÁMICO ---");
-            // Generamos 5 combinaciones distintas
             for (int i = 1; i <= 5; i++) {
                 System.out.print("Generando juego " + i + "... ");
                 analizarHistorico(archivoRuta);
             }
             System.out.println("--- PROCESO FINALIZADO ---");
             
-         // --- SECCIÓN DE VERIFICACIÓN ---
-            System.out.println("\n--- VERIFICANDO BOLETO ANTERIOR ---");
+            System.out.println("\n--- VERIFICANDO BOLETO SORTEO 4188 ---");
             
-            // Tus números del boleto que me mostraste (Apuesta C)
-            List<Integer> miApuestaC = Arrays.asList(4, 19, 34, 36, 46, 51);
+            // Resultados oficiales del 18 de Marzo 2026
+            List<Integer> ganadorMelate = Arrays.asList(25, 38, 48, 49, 52, 56);
+            List<Integer> ganadorRevancha = Arrays.asList(2, 29, 31, 43, 51, 53);
+            List<Integer> ganadorRevanchita = Arrays.asList(11, 23, 29, 30, 43, 50);  
             
-            // Los resultados reales del sorteo 4187 (Domingo 15 de marzo)
-            List<Integer> ganadorMelate = Arrays.asList(14, 15, 24, 29, 37, 48);
-            List<Integer> ganadorRevancha = Arrays.asList(4, 5, 19, 50, 52, 53);
+            // Tu línea E del boleto (la que tuvo los 2 aciertos en Melate)
+            List<Integer> miApuestaE = Arrays.asList(6, 13, 32, 33, 45, 48); 
 
-            verificarBoleto(miApuestaC, ganadorMelate, "MELATE NATURAL");
-            verificarBoleto(miApuestaC, ganadorRevancha, "REVANCHA");
+            // Verificación automática
+            verificarBoleto(miApuestaE, ganadorMelate, "MELATE NATURAL");
+            verificarBoleto(miApuestaE, ganadorRevancha, "REVANCHA");
+            verificarBoleto(miApuestaE, ganadorRevanchita, "REVANCHITA");
         }
-      }
+    }
 
     // Filtro de dispersión de Rafael
     private static boolean esDispersa(List<Integer> numeros) {
@@ -189,14 +190,14 @@ public class AnalizadorMelate {
         boolean decadasSanas = conteoDecadas.values().stream().allMatch(v -> v <= 3);
         boolean termSanas = conteoTerminaciones.values().stream().allMatch(v -> v <= 2);
 
-        // REGLAS OPTIMIZADAS
-        return (suma >= 130 && suma <= 225) && 
+        // AJUSTE RGG 18/03/2026
+        return (suma >= 140 && suma <= 210) && // El rango 140-210 es el "sweet spot"
                (repetidosAnterior <= 1) &&      // No repetir más de 1 del sorteo anterior
                (pares >= 2 && pares <= 4) && 
-               (consecutivos <= 1) && 
+               (consecutivos >= 1) &&           // CAMBIO: Obliga a tener al menos 1 consecutivo
                (conteoDecadas.size() >= 3) && 
                decadasSanas && termSanas && 
-               (totalPrimos >= 1 && totalPrimos <= 3);
+               (totalPrimos >= 1 && totalPrimos <= 2); // Bajamos a max 2 primos (frecuencia común);
     }
 
     private static void exportarSugerencia(String contenido) {
