@@ -1,63 +1,45 @@
-COMBINACIÓN (Con Filtro Vecinos): [4, 6, 26, 43, 49, 50] SUMA: 178
-FECHA: Wed Mar 18 23:30:50 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [4, 7, 24, 31, 32, 55] SUMA: 153
-FECHA: Wed Mar 18 23:30:50 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [7, 13, 34, 44, 50, 51] SUMA: 199
+FECHA: Sat Mar 21 00:00:52 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [11, 27, 28, 32, 50, 55] SUMA: 203
-FECHA: Wed Mar 18 23:30:50 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [13, 17, 30, 34, 50, 51] SUMA: 195
+FECHA: Sat Mar 21 00:00:52 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [10, 11, 24, 34, 43, 50] SUMA: 172
-FECHA: Wed Mar 18 23:30:51 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [13, 18, 33, 34, 44, 55] SUMA: 197
+FECHA: Sat Mar 21 00:00:52 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [15, 24, 33, 37, 38, 45] SUMA: 192
-FECHA: Wed Mar 18 23:30:53 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [17, 30, 31, 32, 44, 50] SUMA: 204
+FECHA: Sat Mar 21 00:00:53 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [4, 7, 40, 47, 48, 50] SUMA: 196
-FECHA: Wed Mar 18 23:34:59 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [4, 13, 18, 19, 38, 49] SUMA: 141
+FECHA: Sat Mar 21 00:00:55 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [5, 24, 25, 39, 47, 50] SUMA: 190
-FECHA: Wed Mar 18 23:34:59 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [13, 22, 24, 25, 33, 46] SUMA: 163
+FECHA: Sun Mar 22 12:07:49 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [19, 32, 33, 34, 41, 48] SUMA: 207
-FECHA: Wed Mar 18 23:34:59 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [1, 25, 26, 30, 43, 44] SUMA: 169
+FECHA: Sun Mar 22 12:07:49 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [9, 15, 22, 24, 37, 38] SUMA: 145
-FECHA: Wed Mar 18 23:34:59 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [16, 24, 25, 29, 30, 34] SUMA: 158
+FECHA: Sun Mar 22 12:07:49 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [7, 17, 22, 25, 39, 40] SUMA: 150
-FECHA: Wed Mar 18 23:34:59 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [4, 24, 25, 30, 32, 43] SUMA: 158
+FECHA: Sun Mar 22 12:07:50 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [7, 14, 18, 32, 33, 47] SUMA: 151
-FECHA: Wed Mar 18 23:46:21 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [2, 14, 25, 30, 48, 49] SUMA: 168
+FECHA: Sun Mar 22 12:07:51 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [6, 22, 32, 33, 41, 55] SUMA: 189
-FECHA: Wed Mar 18 23:46:22 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [4, 29, 34, 42, 43, 49] SUMA: 201
+FECHA: Sun Mar 22 12:27:43 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [4, 25, 30, 31, 50, 53] SUMA: 193
-FECHA: Wed Mar 18 23:46:22 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [1, 24, 25, 32, 43, 51] SUMA: 176
+FECHA: Sun Mar 22 12:27:43 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [19, 24, 25, 28, 40, 41] SUMA: 177
-FECHA: Wed Mar 18 23:46:22 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [5, 14, 24, 25, 27, 48] SUMA: 143
+FECHA: Sun Mar 22 12:27:43 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [6, 24, 30, 31, 38, 47] SUMA: 176
-FECHA: Wed Mar 18 23:46:22 CST 2026
+COMBINACIÓN (Con Filtro Vecinos): [15, 22, 27, 30, 31, 43] SUMA: 168
+FECHA: Sun Mar 22 12:27:43 CST 2026
 -------------------------
-COMBINACIÓN (Con Filtro Vecinos): [4, 13, 14, 22, 38, 51] SUMA: 142
-FECHA: Thu Mar 19 00:02:32 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [5, 23, 24, 38, 39, 50] SUMA: 179
-FECHA: Thu Mar 19 00:02:32 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [8, 11, 38, 40, 41, 55] SUMA: 193
-FECHA: Thu Mar 19 00:02:32 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [4, 22, 25, 33, 34, 37] SUMA: 155
-FECHA: Thu Mar 19 00:02:32 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [4, 11, 24, 47, 49, 50] SUMA: 185
-FECHA: Thu Mar 19 00:02:33 CST 2026
-[6, 24, 30, 31, 38, 47]
-[4, 25, 30, 31, 50, 53]
-[9, 15, 22, 24, 37, 38]
-[19, 24, 25, 28, 40, 41]
+COMBINACIÓN (Con Filtro Vecinos): [16, 25, 30, 38, 39, 47] SUMA: 195
+FECHA: Sun Mar 22 12:27:43 CST 2026

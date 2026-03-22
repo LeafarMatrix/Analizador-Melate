@@ -18,15 +18,15 @@ public class AnalizadorMelate {
             }
             System.out.println("--- PROCESO FINALIZADO ---");
             
-            System.out.println("\n--- VERIFICANDO BOLETO SORTEO 4188 ---");
+            System.out.println("\n--- VERIFICANDO BOLETO SORTEO 4189 ---");
             
-            // Resultados oficiales del 18 de Marzo 2026
-            List<Integer> ganadorMelate = Arrays.asList(25, 38, 48, 49, 52, 56);
-            List<Integer> ganadorRevancha = Arrays.asList(2, 29, 31, 43, 51, 53);
-            List<Integer> ganadorRevanchita = Arrays.asList(11, 23, 29, 30, 43, 50);  
+            // Resultados oficiales del 20 de Marzo 2026
+            List<Integer> ganadorMelate = Arrays.asList(1,5,28,29,45,52);
+            List<Integer> ganadorRevancha = Arrays.asList(13,15,16,18,28,40);
+            List<Integer> ganadorRevanchita = Arrays.asList(13,25,27,31,45,53);  
             
-            // Tu línea E del boleto (la que tuvo los 2 aciertos en Melate)
-            List<Integer> miApuestaE = Arrays.asList(6, 13, 32, 33, 45, 48); 
+            // Tu línea B del boleto (la que tuvo los 3 aciertos en Melate)
+            List<Integer> miApuestaE = Arrays.asList(4,25,30,31,50,53); 
 
             // Verificación automática
             verificarBoleto(miApuestaE, ganadorMelate, "MELATE NATURAL");
@@ -74,7 +74,8 @@ public class AnalizadorMelate {
                 if (campos.length >= 8) {
                     // Calculamos el peso: los sorteos más nuevos (cercanos al índice 0) valen más
                     // Si es el sorteo más reciente, peso es 100. Si es el sorteo 100, peso es 1.
-                    double peso = Math.max(0, 100 - ((double) i)); 
+                   // double peso = Math.max(0, 100 - ((double) i)); 
+                    double peso = Math.pow(0.95, i) * 100; // El peso cae 5% en cada registro hacia atrás
 
                     for (int j = 2; j <= 7; j++) {
                         try {
@@ -235,7 +236,7 @@ public class AnalizadorMelate {
         System.out.println("Tu jugada: " + jugada);
         System.out.println("Aciertos (" + aciertos.size() + "): " + aciertos);
         
-        if (aciertos.size() >= 2) {
+        if (aciertos.size() >= 2 &&  !modalidad.equals("REVANCHITA")) {
             System.out.println("¡FELICIDADES! Tienes premio en " + modalidad);
         } else {
             System.out.println("Sigue participando en " + modalidad);
