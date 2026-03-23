@@ -43,3 +43,15 @@ FECHA: Sun Mar 22 12:27:43 CST 2026
 -------------------------
 COMBINACIÓN (Con Filtro Vecinos): [16, 25, 30, 38, 39, 47] SUMA: 195
 FECHA: Sun Mar 22 12:27:43 CST 2026
+-------------------------
+COMBINACIÓN: [12, 15, 26, 31, 32, 48] SUMA: 164
+FECHA: Mon Mar 23 00:00:22 CST 2026
+-------------------------
+COMBINACIÓN: [10, 12, 13, 21, 38, 41] SUMA: 135
+FECHA: Mon Mar 23 00:00:23 CST 2026
+-------------------------
+COMBINACIÓN: [3, 13, 14, 24, 48, 55] SUMA: 157
+FECHA: Mon Mar 23 00:00:24 CST 2026
+-------------------------
+COMBINACIÓN: [5, 6, 13, 14, 50, 53] SUMA: 141
+FECHA: Mon Mar 23 00:00:24 CST 2026
