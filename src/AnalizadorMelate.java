@@ -7,13 +7,13 @@ public class AnalizadorMelate {
     public static void main(String[] args) {
         String archivoRuta = "historico_melate.txt";
         
-        System.out.println("--- ACTUALIZANDO MODELO CON SORTEO 4190 ---");
+        System.out.println("--- ACTUALIZANDO MODELO CON SORTEO 4191 ---");
         
         // 1. RESULTADOS OFICIALES SORTEO 4190 (Domingo 22 Marzo)
-        List<Integer> ganadorMelate = Arrays.asList(7, 20, 23, 27, 29, 30); 
+        List<Integer> ganadorMelate = Arrays.asList(5,9,15,28,36,56); 
         int adicionalOficial = 11;
-        List<Integer> ganadorRevancha = Arrays.asList(2, 10, 15, 25, 36, 49);
-        List<Integer> ganadorRevanchita = Arrays.asList(22, 25, 34, 43, 44, 55); 
+        List<Integer> ganadorRevancha = Arrays.asList(5,9,23,25,35,45);
+        List<Integer> ganadorRevanchita = Arrays.asList(2,7,9,15,22,43); 
 
         // Tu Línea C del boleto (La ganadora de hoy)
         List<Integer> miLineaC = Arrays.asList(15, 22, 27, 30, 31, 43);
@@ -142,10 +142,12 @@ public class AnalizadorMelate {
         return res + "\nFECHA: " + new Date();
     }
 
+    // --- AJUSTE EN REGLAS PARA EL SORTEO 4192 ---
     private static boolean validarReglas(List<Integer> lista, List<Integer> sorteoAnterior) {
         Collections.sort(lista);
         int pares = 0, suma = 0, consecutivos = 0, totalPrimos = 0;
         List<Integer> primos = Arrays.asList(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53);
+
         for (int i = 0; i < lista.size(); i++) {
             int n = lista.get(i);
             suma += n;
@@ -153,9 +155,18 @@ public class AnalizadorMelate {
             if (primos.contains(n)) totalPrimos++;
             if (i < lista.size() - 1 && lista.get(i + 1) - n == 1) consecutivos++;
         }
-        return (suma >= 130 && suma <= 210) && (consecutivos >= 1) && (pares >= 2 && pares <= 4) && (totalPrimos >= 1 && totalPrimos <= 3);
+
+        // CAMBIO: Bajamos la suma mínima a 125 porque el 3 y 5 están saliendo mucho
+        boolean sumaValida = (suma >= 125 && suma <= 210);
+        
+        // CAMBIO: Permitimos hasta 4 primos (hoy salieron 5, 3, 2, 7, 23 en total)
+        boolean primosValidos = (totalPrimos >= 1 && totalPrimos <= 4);
+
+        return sumaValida && (consecutivos >= 1) && (pares >= 2 && pares <= 4) && primosValidos;
     }
 
+    
+    
     private static boolean esDispersa(List<Integer> numeros) {
         int contiguos = 0;
         for (int i = 0; i < numeros.size() - 1; i++) if (numeros.get(i + 1) - numeros.get(i) <= 2) contiguos++;
