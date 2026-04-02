@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,10 @@ public class AnalizadorEfectividad {
 	
 	// 4. Método para escribir en el CSV de control
     public static void exportarEfectividadCSV(String jugada, int aciertos, double delta) {
-        String rutaCSV = "reporte_precision_matrix.csv";
+    	// Primero limpiamos la basura de ejecuciones anteriores
+        limpiarPipeline();
+    	
+    	String rutaCSV = "reporte_precision_matrix.csv";
         File file = new File(rutaCSV);
         boolean existe = file.exists();
 
@@ -228,4 +232,45 @@ public class AnalizadorEfectividad {
     }
     
     // ... (Mantén tus métodos de CSV y ResumenMarzo igual)
+
+    public static void limpiarPipeline() {
+        System.out.println("🧹 Iniciando limpieza de registros duplicados...");
+
+        // 1. Limpiar historial_jugadas_melate.txt (Solo deja la última entrada)
+        File txtFile = new File("historial_jugadas_melate.txt");
+        if (txtFile.exists()) {
+            try {
+                List<String> lineas = Files.readAllLines(txtFile.toPath());
+                if (lineas.size() > 4) { // Si hay más de una jugada (cada jugada son ~3 líneas)
+                    List<String> ultimaJugada = lineas.subList(lineas.size() - 3, lineas.size());
+                    Files.write(txtFile.toPath(), ultimaJugada);
+                    System.out.println("✅ TXT depurado: Solo queda la jugada vigente.");
+                }
+            } catch (IOException e) { System.err.println("Error limpiando TXT: " + e.getMessage()); }
+        }
+
+        // 2. Limpiar reporte_precision_matrix.csv (Remueve filas con la misma jugada)
+        File csvFile = new File("reporte_precision_matrix.csv");
+        if (csvFile.exists()) {
+            try {
+                List<String> lineasCsv = Files.readAllLines(csvFile.toPath());
+                if (lineasCsv.size() > 1) {
+                    String header = lineasCsv.get(0);
+                    // Usamos un LinkedHashMap para mantener el orden pero eliminar duplicados de la jugada
+                    Map<String, String> unicos = new LinkedHashMap<>();
+                    for (int i = 1; i < lineasCsv.size(); i++) {
+                        String[] col = lineasCsv.get(i).split(",");
+                        if (col.length > 1) unicos.put(col[1], lineasCsv.get(i));
+                    }
+                    
+                    List<String> salidaCsv = new ArrayList<>();
+                    salidaCsv.add(header);
+                    salidaCsv.addAll(unicos.values());
+                    Files.write(csvFile.toPath(), salidaCsv);
+                    System.out.println("✅ CSV depurado: Duplicados eliminados.");
+                }
+            } catch (IOException e) { System.err.println("Error limpiando CSV: " + e.getMessage()); }
+        }
+    }
+
 }
