@@ -1,15 +1,16 @@
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [6, 13, 31, 32, 36, 49] SUMA: 167
-FECHA: Mon Mar 16 13:15:56 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [20, 30, 31, 36, 43, 45] SUMA: 205
-FECHA: Mon Mar 16 13:15:56 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [6, 14, 19, 40, 41, 50] SUMA: 170
-FECHA: Mon Mar 16 13:15:56 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [9, 19, 23, 28, 32, 43] SUMA: 154
-FECHA: Mon Mar 16 13:15:56 CST 2026
--------------------------
-COMBINACIÓN (Con Filtro Vecinos): [6, 13, 32, 33, 45, 48] SUMA: 177
-FECHA: Mon Mar 16 13:15:56 CST 2026
+🚀 INICIANDO PIPELINE MATRIX - PREPARACIÓN SORTEO 4195
+ℹ️ CSV de auditoría vacío. Usando Rey del histórico principal...
+
+🎯 RESULTADO DE LA MATRIX PARA EL VIERNES:
+===========================================
+JUGADA MAESTRA: [22, 24, 25, 29, 33, 41]
+PESO APLICADO: 0.96
+✅ VALIDACIÓN EXITOSA: El Número Rey (41) está presente.
+===========================================
+
+🚀 MATRIX PIPELINE - PREPARANDO VIERNES 4195
+ℹ️ CSV de auditoría vacío. Usando Rey del histórico principal...
+👑 EL NÚMERO REY DETECTADO ES: 41
+
+🎯 JUGADA MAESTRA SUGERIDA: [22, 24, 25, 29, 33, 41]
+✅ CALIBRACIÓN PERFECTA: La jugada incluye al Rey.
