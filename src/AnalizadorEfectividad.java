@@ -8,8 +8,34 @@ public class AnalizadorEfectividad {
     // --- NUEVO MÉTODO MAIN PARA INTEGRAR TODO ---
 	public static void main(String[] args) {
 	    String rutaHistorico = "historico_melate.txt"; 
+	 // 1. Definir la jugada que compraste (Boleto ID: 701800047)
+	    List<Integer> miJugada = Arrays.asList(15, 22, 29, 33, 41, 50);
+
+	    // 2. Cargar Resultados Oficiales Sorteo 4196 (5 de Abril 2026)
+	    // Datos obtenidos del escrutinio oficial
+	    List<Integer> melateReal = Arrays.asList(5, 6, 14, 26, 42, 44); 
+	    List<Integer> revanchaReal = Arrays.asList(13, 23, 26, 39, 41, 44);
+	    List<Integer> revanchitaReal = Arrays.asList(4, 11, 15, 30, 43, 54);
+	 
+	    System.out.println("🚀 INICIANDO AUDITORÍA OFICIAL - SORTEO 4196");
+	    System.out.println("📅 Fecha de Sorteo: Dom 05 abr. 2026");
+	    System.out.println("------------------------------------------------");
 	    
-	    System.out.println("🚀 INICIANDO PIPELINE MATRIX - PROCESO DE ESCRITURA");
+	 // 3. Ejecutar Limpieza de Pipeline antes de auditar
+	    // Esto asegura que no haya duplicados de simulaciones previas en el CSV
+	    limpiarPipeline();
+	    
+	    // 4. Ejecutar Auditoría Multijuego
+	    // Este método calculará Aciertos y Delta para cada variante
+	    auditarSorteoCompleto(miJugada, melateReal, revanchaReal, revanchitaReal);
+
+	    // 5. Generar Resumen de Ciclo
+	    // Actualizará las estadísticas en consola basadas en los nuevos datos
+	    generarResumenMarzo();
+
+	    System.out.println("✅ Auditoría finalizada. Los deltas han sido persistidos en el CSV.");
+	    
+	   // System.out.println("🚀 INICIANDO PIPELINE MATRIX - PROCESO DE ESCRITURA");
 	    
 	    // 1. Identificar al líder actual
 	    int rey = obtenerNumeroRey();
@@ -271,6 +297,69 @@ public class AnalizadorEfectividad {
                 }
             } catch (IOException e) { System.err.println("Error limpiando CSV: " + e.getMessage()); }
         }
+    }
+    
+    /**
+     * Realiza la auditoría integral de la jugada contra las tres variantes.
+     * Registra en el CSV el resultado más significativo para el aprendizaje de la Matrix.
+     */
+    public static void auditarSorteoCompleto(List<Integer> miJugada, 
+                                            List<Integer> resMelate, 
+                                            List<Integer> resRevancha, 
+                                            List<Integer> resRevanchita) {
+        
+        System.out.println("\n🔍 AUDITORÍA DE LA MATRIX - SORTEO 4196");
+        System.out.println("==========================================");
+        System.out.println("JUGADA COMPRADA: " + miJugada);
+        System.out.println("------------------------------------------");
+
+        // Procesamos cada juego y obtenemos sus métricas
+        ResultadosJuego melate = calcularMetricas("MELATE    ", miJugada, resMelate);
+        ResultadosJuego revancha = calcularMetricas("REVANCHA  ", miJugada, resRevancha);
+        ResultadosJuego revanchita = calcularMetricas("REVANCHITA", miJugada, resRevanchita);
+
+        // Determinamos cuál fue el mejor desempeño (menor Delta)
+        ResultadosJuego mejor = melate;
+        if (revancha.delta < mejor.delta) mejor = revancha;
+        if (revanchita.delta < mejor.delta) mejor = revanchita;
+
+        System.out.println("------------------------------------------");
+        System.out.println("🏆 MEJOR DESEMPEÑO: " + mejor.nombreJuego);
+        
+        // PERSISTENCIA: Guardamos el mejor resultado en el CSV para entrenamiento del Número Rey
+        exportarEfectividadCSV(miJugada.toString(), mejor.aciertos, mejor.delta);
+        
+        System.out.println("==========================================\n");
+    }
+
+    /**
+     * Clase interna de apoyo para estructurar los resultados de la auditoría.
+     */
+    private static class ResultadosJuego {
+        String nombreJuego;
+        int aciertos;
+        double delta;
+
+        ResultadosJuego(String nombre, int a, double d) {
+            this.nombreJuego = nombre;
+            this.aciertos = a;
+            this.delta = d;
+        }
+    }
+
+    private static ResultadosJuego calcularMetricas(String nombre, List<Integer> jugada, List<Integer> resultado) {
+        // 1. Calcular aciertos directos
+        List<Integer> coincidencias = jugada.stream()
+                .filter(resultado::contains)
+                .collect(Collectors.toList());
+        
+        // 2. Calcular Delta (Cercanía promedio) usando tu método existente calcularDelta
+        double delta = calcularDelta(jugada, resultado);
+        
+        System.out.printf("[%s] Aciertos: %d %s | Delta: %.2f\n", 
+                          nombre, coincidencias.size(), coincidencias, delta);
+        
+        return new ResultadosJuego(nombre, coincidencias.size(), delta);
     }
 
 }
