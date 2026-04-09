@@ -13,9 +13,9 @@ public class AnalizadorEfectividad {
 
 	    // 2. Cargar Resultados Oficiales Sorteo 4196 (5 de Abril 2026)
 	    // Datos obtenidos del escrutinio oficial
-	    List<Integer> melateReal = Arrays.asList(5, 6, 14, 26, 42, 44); 
-	    List<Integer> revanchaReal = Arrays.asList(13, 23, 26, 39, 41, 44);
-	    List<Integer> revanchitaReal = Arrays.asList(4, 11, 15, 30, 43, 54);
+	    List<Integer> melateReal = Arrays.asList(9,25,38,40,51,52); 
+	    List<Integer> revanchaReal = Arrays.asList(15,27,41,43,53);
+	    List<Integer> revanchitaReal = Arrays.asList(3,11,26,34,38);
 	 
 	    System.out.println("🚀 INICIANDO AUDITORÍA OFICIAL - SORTEO 4196");
 	    System.out.println("📅 Fecha de Sorteo: Dom 05 abr. 2026");

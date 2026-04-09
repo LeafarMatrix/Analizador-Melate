@@ -1,3 +1,3 @@
 -------------------------
-COMBINACIÓN: [5, 22, 29, 33, 41, 50]
-FECHA: Sun Apr 05 23:54:06 CST 2026
+COMBINACIÓN: [5, 9, 25, 29, 41, 50]
+FECHA: Wed Apr 08 23:54:47 CST 2026

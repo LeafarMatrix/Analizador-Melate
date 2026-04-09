@@ -13,38 +13,47 @@ public class GeneradorMatrix {
             while ((linea = br.readLine()) != null) { lineas.add(linea); }
         } catch (IOException e) { System.err.println("Error: " + e.getMessage()); }
 
+        // 1. CÁLCULO DE PESOS EXPONENCIALES (0.96)
         for (int i = 0; i < lineas.size(); i++) {
             String[] datos = lineas.get(i).split(",");
             if (datos.length < 8) continue;
             
             double peso = Math.pow(0.96, i); 
-
             for (int j = 2; j <= 7; j++) {
                 int num = Integer.parseInt(datos[j]);
                 mapaPesos.put(num, mapaPesos.getOrDefault(num, 0.0) + peso);
             }
         }
 
-        // Ordenamos todos los números por su peso de mayor a menor
+        // 2. TUNING DE TENDENCIA RECIENTE (Hotfix para números bajos)
+        if (!lineas.isEmpty()) {
+            String[] ultimoSorteo = lineas.get(0).split(",");
+            for (int j = 2; j <= 7; j++) {
+                int num = Integer.parseInt(ultimoSorteo[j]);
+                if (num <= 15) {
+                    // Inyectamos un bono del 15% de peso extra si el número es bajo
+                    // Esto ayuda a detectar rachas como la del domingo pasado
+                    mapaPesos.put(num, mapaPesos.getOrDefault(num, 0.0) * 1.15);
+                }
+            }
+        }
+
         List<Integer> candidatos = mapaPesos.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        // Intentamos armar la jugada ideal (Top 6)
         List<Integer> seleccionados = candidatos.stream().limit(6).collect(Collectors.toList());
         
-        // Si no cumple la suma, hacemos un ajuste técnico (DBA Tuning)
+        // 3. VALIDACIÓN DE INTEGRIDAD (130-190)
         if (!validarSuma(seleccionados)) {
-            System.out.println("⚠️ Jugada del Top 6 fuera de rango (" + seleccionados.stream().mapToInt(Integer::intValue).sum() + "). Aplicando balanceo...");
-            // Tomamos los 5 mejores y buscamos un 6to número en el Top 12 que equilibre la suma
-            int sumaParcial = seleccionados.stream().limit(5).mapToInt(Integer::intValue).sum();
-            for (int k = 5; k < Math.min(candidatos.size(), 12); k++) {
-                int nuevoNum = candidatos.get(k);
-                if (sumaParcial + nuevoNum >= 130 && sumaParcial + nuevoNum <= 190) {
-                    seleccionados.set(5, nuevoNum);
-                    break;
-                }
+            System.out.println("⚠️ Rebalanceando para cumplir rango 130-190...");
+            seleccionados.stream().mapToInt(Integer::intValue).sum();
+            // Lógica DBA: Si la suma es baja, buscamos subirla con el siguiente candidato más alto
+            // Si es alta, buscamos bajarla.
+            for (int k = 6; k < candidatos.size(); k++) {
+                seleccionados.set(5, candidatos.get(k));
+                if (validarSuma(seleccionados)) break;
             }
         }
 
@@ -55,9 +64,5 @@ public class GeneradorMatrix {
     public static boolean validarSuma(List<Integer> jugada) {
         int suma = jugada.stream().mapToInt(Integer::intValue).sum();
         return suma >= 130 && suma <= 190;
-    }
-    
-    public static int calcularSuma(List<Integer> jugada) {
-        return jugada.stream().mapToInt(Integer::intValue).sum();
     }
 }
