@@ -17,8 +17,8 @@ public class AnalizadorEfectividad {
 	    List<Integer> revanchaReal = Arrays.asList(15,27,41,43,53);
 	    List<Integer> revanchitaReal = Arrays.asList(3,11,26,34,38);
 	 
-	    System.out.println("🚀 INICIANDO AUDITORÍA OFICIAL - SORTEO 4196");
-	    System.out.println("📅 Fecha de Sorteo: Dom 05 abr. 2026");
+	    System.out.println("🚀 INICIANDO AUDITORÍA OFICIAL - SORTEO 4197");
+	    System.out.println("📅 Fecha de Sorteo: Dom 10 abr. 2026");
 	    System.out.println("------------------------------------------------");
 	    
 	 // 3. Ejecutar Limpieza de Pipeline antes de auditar
@@ -45,7 +45,10 @@ public class AnalizadorEfectividad {
 	    List<Integer> sugerencia = GeneradorMatrix.generarJugadaMaestra(rutaHistorico);
 	    System.out.println("\n🎯 JUGADA MAESTRA GENERADA: " + sugerencia);
 	    
-	    // --- AQUÍ EMPIEZA LA ESCRITURA QUE FALTABA ---
+	    // --- AQUÍ DEBES INVOCAR EL NUEVO MÉTODO ---
+	      verificarSingularidadHistórica(sugerencia); 
+	      
+	    // ------------------------------------------
 
 	    // 3. PERSISTENCIA EN TXT: Guardamos la jugada para que no se pierda
 	    // Como no tenemos un método específico de guardado de jugada en tu código, 
@@ -361,5 +364,40 @@ public class AnalizadorEfectividad {
         
         return new ResultadosJuego(nombre, coincidencias.size(), delta);
     }
+    
+   //GG Nuevo Metodo 
+    
+    public static void verificarSingularidadHistórica(List<Integer> jugadaActual) {
+        String rutaHistorico = "historico_melate.txt";
+        int coincidenciasTotales = 0;
+        
+        System.out.println("\n📜 Consultando Master Data Histórico (1984 - 2026)...");
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaHistorico))) {
+            String linea;
+            br.readLine(); // Saltar header
+            while ((linea = br.readLine()) != null) {
+                String[] datos = linea.split(",");
+                if (datos.length < 8) continue;
+                
+                List<Integer> historico = new ArrayList<>();
+                for (int j = 2; j <= 7; j++) historico.add(Integer.parseInt(datos[j]));
+                Collections.sort(historico);
+                
+                if (historico.equals(jugadaActual)) {
+                    coincidenciasTotales++;
+                    System.out.println("⚠️ ¡COINCIDENCIA EXACTA ENCONTRADA! Sorteo: " + datos[1] + " Fecha: " + datos[10]);
+                }
+            }
+            
+            if (coincidenciasTotales == 0) {
+                System.out.println("✅ JUGADA ÚNICA: Esta combinación nunca ha ganado el premio mayor. ¡La Matrix está explorando terreno virgen!");
+            } else {
+                System.out.println("📊 Esta jugada se ha repetido " + coincidenciasTotales + " veces en la historia.");
+            }
+        } catch (IOException e) { System.err.println("Error en query histórico: " + e.getMessage()); }
+    }
+    
+   //rgg 
 
 }
