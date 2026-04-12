@@ -5,198 +5,125 @@ import java.util.stream.Collectors;
 
 public class AnalizadorEfectividad {
     
-    // --- NUEVO MÉTODO MAIN PARA INTEGRAR TODO ---
-	public static void main(String[] args) {
-	    String rutaHistorico = "historico_melate.txt"; 
-	 // 1. Definir la jugada que compraste (Boleto ID: 701800047)
-	    List<Integer> miJugada = Arrays.asList(15, 22, 29, 33, 41, 50);
+    public static void main(String[] args) {
+        String rutaHistorico = "historico_melate.txt"; 
+        
+        // 1. MANTENIMIENTO
+        limpiarPipeline(); 
+        
+        // 2. GENERACIÓN AUTOMÁTICA (Sin captura manual)
+        // El sistema consulta al GeneradorMatrix y obtiene la mejor jugada calculada
+        List<Integer> miJugada = GeneradorMatrix.generarJugadaMaestra(rutaHistorico);
+        
+        System.out.println("\n🎲 JUGADA MAESTRA CALCULADA POR LA MATRIX: " + miJugada);
+        System.out.println("-----------------------------------------------------------");
+        
+        // 3. ANÁLISIS DE SIMETRÍA
+        ejecutarSimetriaEspejo(miJugada);
+        
+        // 4. AUDITORÍA OFICIAL (Resultados reales del sorteo 4198)
+        List<Integer> melateReal = Arrays.asList(5, 8, 25, 27, 30, 38); 
+        List<Integer> revanchaReal = Arrays.asList(9, 12, 19, 26, 36, 49);
+        List<Integer> revanchitaReal = Arrays.asList(4, 5, 20, 38, 52, 55);
 
-	    // 2. Cargar Resultados Oficiales Sorteo 4196 (5 de Abril 2026)
-	    // Datos obtenidos del escrutinio oficial
-	    List<Integer> melateReal = Arrays.asList(9,25,38,40,51,52); 
-	    List<Integer> revanchaReal = Arrays.asList(15,27,41,43,53);
-	    List<Integer> revanchitaReal = Arrays.asList(3,11,26,34,38);
-	 
-	    System.out.println("🚀 INICIANDO AUDITORÍA OFICIAL - SORTEO 4197");
-	    System.out.println("📅 Fecha de Sorteo: Dom 10 abr. 2026");
-	    System.out.println("------------------------------------------------");
-	    
-	 // 3. Ejecutar Limpieza de Pipeline antes de auditar
-	    // Esto asegura que no haya duplicados de simulaciones previas en el CSV
-	    limpiarPipeline();
-	    
-	    // 4. Ejecutar Auditoría Multijuego
-	    // Este método calculará Aciertos y Delta para cada variante
-	    auditarSorteoCompleto(miJugada, melateReal, revanchaReal, revanchitaReal);
-
-	    // 5. Generar Resumen de Ciclo
-	    // Actualizará las estadísticas en consola basadas en los nuevos datos
-	    generarResumenMarzo();
-
-	    System.out.println("✅ Auditoría finalizada. Los deltas han sido persistidos en el CSV.");
-	    
-	   // System.out.println("🚀 INICIANDO PIPELINE MATRIX - PROCESO DE ESCRITURA");
-	    
-	    // 1. Identificar al líder actual
-	    int rey = obtenerNumeroRey();
-	    System.out.println("👑 EL NÚMERO REY DETECTADO ES: " + rey);
-
-	    // 2. Generar la jugada maestra
-	    List<Integer> sugerencia = GeneradorMatrix.generarJugadaMaestra(rutaHistorico);
-	    System.out.println("\n🎯 JUGADA MAESTRA GENERADA: " + sugerencia);
-	    
-	    // --- AQUÍ DEBES INVOCAR EL NUEVO MÉTODO ---
-	      verificarSingularidadHistórica(sugerencia); 
-	      
-	    // ------------------------------------------
-
-	    // 3. PERSISTENCIA EN TXT: Guardamos la jugada para que no se pierda
-	    // Como no tenemos un método específico de guardado de jugada en tu código, 
-	    // lo escribimos directamente aquí para asegurar que se guarde:
-	    try (FileWriter fw = new FileWriter("historial_jugadas_melate.txt", true);
-	         PrintWriter pw = new PrintWriter(fw)) {
-	        pw.println("-------------------------");
-	        pw.println("COMBINACIÓN: " + sugerencia);
-	        pw.println("FECHA: " + new Date().toString());
-	        System.out.println("✅ Jugada escrita en historial_jugadas_melate.txt");
-	    } catch (IOException e) {
-	        System.err.println("Error al escribir TXT: " + e.getMessage());
-	    }
-
-	    // 4. PERSISTENCIA EN CSV: Creamos el registro de precisión inicial
-	    // Usamos el método exportarEfectividadCSV que ya tienes definido
-	    exportarEfectividadCSV(sugerencia.toString(), 0, 0.0); 
-	    // (Se guarda con 0 aciertos porque aún no sucede el sorteo)
-
-	    // 5. CIERRE DE MARZO: Si quieres generar el reporte final de marzo
-	    generarResumenMarzo();
-
-	    System.out.println("\n=== PIPELINE FINALIZADO: ARCHIVOS ACTUALIZADOS ===");
-	}
-	
-	// 4. Método para escribir en el CSV de control
-    public static void exportarEfectividadCSV(String jugada, int aciertos, double delta) {
-    	// Primero limpiamos la basura de ejecuciones anteriores
-        limpiarPipeline();
-    	
-    	String rutaCSV = "reporte_precision_matrix.csv";
-        File file = new File(rutaCSV);
-        boolean existe = file.exists();
-
-        try (FileWriter fw = new FileWriter(rutaCSV, true); 
-             PrintWriter pw = new PrintWriter(fw)) {
-            
-            // Si el archivo es nuevo, escribimos el header (columnas)
-            if (!existe) pw.println("Fecha,Jugada,Aciertos,Delta"); 
-            
-            pw.printf("%s,\"%s\",%d,%.2f\n", new Date().toString(), jugada, aciertos, delta);
-            
-            System.out.println("✅ Registro de precisión exportado a " + rutaCSV);
-        } catch (IOException e) {
-            System.err.println("Error al exportar CSV: " + e.getMessage());
-        }
+        System.out.println("🚀 EJECUTANDO AUDITORÍA SOBRE JUGADA AUTOMATIZADA...");
+        auditarSorteoCompleto(miJugada, melateReal, revanchaReal, revanchitaReal);
+        
+        // 5. PROYECCIÓN PARA EL MIÉRCOLES (Sorteo 4200)
+        sugerirJugadaCentenaria(rutaHistorico);
+        
+        // 6. REPORTING ESTADÍSTICO
+        generarResumenMarzo();
+        
+        System.out.println("=== PIPELINE FINALIZADO: SISTEMA 100% AUTÓNOMO ===");
     }
 
-    // 5. Método para el cierre estadístico de Marzo
-   
-    public static void generarResumenMarzo() {
-        String rutaCSV = "reporte_precision_matrix.csv";
-        double mejorDelta = 56.0;
-        int totalAciertos = 0;
-        int jugadasProcesadas = 0;
-
-        System.out.println("\n==========================================");
-        System.out.println("   RESUMEN ESTADÍSTICO: CIERRE DE CICLO");
+    public static void auditarSorteoCompleto(List<Integer> miJugada, 
+                                            List<Integer> resMelate, 
+                                            List<Integer> resRevancha, 
+                                            List<Integer> resRevanchita) {
+        
+        System.out.println("\n🔍 AUDITORÍA INTEGRAL - SORTEO 4198");
         System.out.println("==========================================");
+        
+        ResultadosJuego melate = calcularMetricas("MELATE    ", miJugada, resMelate);
+        ResultadosJuego revancha = calcularMetricas("REVANCHA  ", miJugada, resRevancha);
+        ResultadosJuego revanchita = calcularMetricas("REVANCHITA", miJugada, resRevanchita);
 
-        File f = new File(rutaCSV);
-        if (!f.exists()) {
-            System.out.println("ℹ️ No hay datos suficientes todavía.");
-            return;
+        ResultadosJuego mejor = melate;
+        if (revancha.delta < mejor.delta) mejor = revancha;
+        if (revanchita.delta < mejor.delta) mejor = revanchita;
+
+        System.out.println("------------------------------------------");
+        System.out.println("🏆 MEJOR DESEMPEÑO: " + mejor.nombreJuego);
+        
+        // ACTIVACIÓN DEL VAULT: Si detecta éxito (3+ aciertos o delta crítico), respalda la jugada
+        if (mejor.aciertos >= 3 || mejor.delta < 1.0) {
+            registrarEnVault(miJugada, mejor.aciertos, mejor.delta, mejor.nombreJuego);
         }
-
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaCSV))) {
-            String linea;
-            br.readLine(); // Saltar encabezado
-
-            while ((linea = br.readLine()) != null) {
-                // Usamos una expresión regular para separar por coma, manejando posibles espacios
-                String[] columnas = linea.split(",");
-                if (columnas.length >= 4) {
-                    try {
-                        // LIMPIEZA CLAVE: .trim() elimina espacios antes de convertir
-                        int aciertos = Integer.parseInt(columnas[2].trim());
-                        double delta = Double.parseDouble(columnas[3].trim());
-
-                        if (delta < mejorDelta && delta > 0) mejorDelta = delta;
-                        totalAciertos += aciertos;
-                        jugadasProcesadas++;
-                    } catch (NumberFormatException e) {
-                        // Si una línea está mal formateada, la saltamos para no romper el proceso
-                        continue; 
-                    }
-                }
-            }
-
-            if (jugadasProcesadas > 0) {
-                System.out.println("SORTEOS ANALIZADOS: " + jugadasProcesadas);
-                System.out.println("ACIERTOS TOTALES REGISTRADOS: " + totalAciertos);
-                System.out.printf("PUNTUACIÓN MÁXIMA (MENOR DELTA): %.2f \n", mejorDelta);
-            } else {
-                System.out.println("ℹ️ Esperando primer sorteo auditado para mostrar estadísticas.");
-            }
-
-        } catch (IOException e) {
-            System.err.println("Error al leer CSV: " + e.getMessage());
-        }
+        
+        exportarEfectividadCSV(miJugada.toString(), mejor.aciertos, mejor.delta);
         System.out.println("==========================================\n");
     }
-    
-    
-    
-    public static void analizarEfectividad(String rutaHistorial, List<Integer> resultadoReal, int adicionalReal) {
-        System.out.println("\n=== REPORTANDO EFECTIVIDAD DE LA MATRIX (SORTEO 4194) ===");
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaHistorial))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                if (linea.startsWith("COMBINACIÓN:")) {
-                    String numerosStr = linea.substring(linea.indexOf("[") + 1, linea.indexOf("]"));
-                    List<Integer> jugadaActual = Arrays.stream(numerosStr.split(","))
-                                         .map(String::trim).map(Integer::parseInt).collect(Collectors.toList());
-                    procesarComparacion(jugadaActual, resultadoReal, adicionalReal);
-                }
-            }
-        } catch (IOException e) { System.err.println("Error: " + e.getMessage()); }
-    }
 
-    private static void procesarComparacion(List<Integer> jugada, List<Integer> resultado, int adicional) {
-        List<Integer> aciertos = jugada.stream().filter(resultado::contains).collect(Collectors.toList());
-        boolean tieneAdicional = jugada.contains(adicional);
-        double sumaDelta = 0;
-        for (Integer n : jugada) {
-            int cercania = resultado.stream().mapToInt(r -> Math.abs(r - n)).min().orElse(56);
-            sumaDelta += cercania;
+    public static void sugerirJugadaCentenaria(String rutaHistorico) {
+        System.out.println("\n🎯 GENERANDO PROYECCIÓN MAESTRA PARA SORTEO 4200");
+        System.out.println("===========================================================");
+        
+        List<Integer> topActual = GeneradorMatrix.generarJugadaMaestra(rutaHistorico);
+        Map<Integer, Integer> frecuenciaEspejo = new HashMap<>();
+        int[] ciclos = {4100, 4000, 3900, 3800, 3700};
+        
+        for (int c : ciclos) {
+            List<Integer> hist = obtenerSorteoPorNumero(c);
+            for (int n : hist) frecuenciaEspejo.put(n, frecuenciaEspejo.getOrDefault(n, 0) + 1);
         }
-        double deltaFinal = sumaDelta / 6.0;
-        System.out.printf("Jugada: %s | Aciertos: %d | Adicional: %s | Delta: %.2f\n", 
-                          jugada, aciertos.size(), (tieneAdicional ? "SÍ" : "NO"), deltaFinal);
-        if (deltaFinal < 3.0) System.out.println("   🔥 ¡ALERTA! Cercanía crítica detectada.");
+
+        System.out.println("💎 ANÁLISIS DE CONFLUENCIA (Peso 0.96 + Memoria Centenaria):");
+        List<Integer> jugadaFinal = new ArrayList<>();
+        
+        for (int num : topActual) {
+            if (frecuenciaEspejo.containsKey(num)) {
+                System.out.printf("  ⭐ Número %d: Detectado en ciclos espejo.\n", num);
+                jugadaFinal.add(num);
+            }
+        }
+
+        if (jugadaFinal.size() < 6) {
+            for (int num : topActual) {
+                if (!jugadaFinal.contains(num)) jugadaFinal.add(num);
+                if (jugadaFinal.size() >= 6) break;
+            }
+        }
+
+        Collections.sort(jugadaFinal);
+        int suma = jugadaFinal.stream().mapToInt(Integer::intValue).sum();
+        
+        System.out.println("\n🚀 JUGADA PROYECTADA PARA EL MIÉRCOLES: " + jugadaFinal);
+        System.out.println("📊 SUMA TOTAL: " + suma + (suma >= 130 && suma <= 190 ? " [RANGO ÓPTIMO]" : " [AJUSTAR]"));
+        System.out.println("===========================================================\n");
     }
 
-    public static void ejecutarAuditoria(List<Integer> jugada, List<Integer> resultadoReal, int adicionalReal) {
-        Collections.sort(jugada);
-        Collections.sort(resultadoReal);
-        List<Integer> aciertos = jugada.stream().filter(resultadoReal::contains).collect(Collectors.toList());
-        double deltaPromedio = calcularDelta(jugada, resultadoReal);
-        System.out.println("\n==========================================");
-        System.out.println("   REPORTE DE LA MATRIX - SORTEO 4194"); // Actualizado para último sorteo
-        System.out.println("==========================================");
-        System.out.println("TU JUGADA: " + jugada);
-        System.out.println("RESULTADO: " + resultadoReal + " [Ad: " + adicionalReal + "]");
-        System.out.println("NATURALES: " + aciertos.size() + " " + aciertos);
-        System.out.printf("INDICE DE CERCANÍA (DELTA): %.2f \n", deltaPromedio);
-        interpretarDelta(deltaPromedio);
-        System.out.println("==========================================\n");
+    public static void registrarEnVault(List<Integer> jugada, int aciertos, double delta, String juego) {
+        String rutaVault = "vault_exitos_matrix.txt";
+        try (FileWriter fw = new FileWriter(rutaVault, true); PrintWriter pw = new PrintWriter(fw)) {
+            pw.println("==========================================");
+            pw.println("TIMESTAMP: " + new Date().toString());
+            pw.println("JUEGO: " + juego + " | JUGADA: " + jugada);
+            pw.println("ACIERTOS: " + aciertos + " | DELTA: " + delta);
+            pw.println("ESTADO: CALIBRACIÓN EXITOSA");
+            pw.println("==========================================\n");
+            System.out.println("💾 JUGADA ASEGURADA EN EL VAULT DE SEGURIDAD.");
+        } catch (IOException e) { System.err.println("Error en Vault: " + e.getMessage()); }
+    }
+
+    // --- MÉTODOS DE APOYO (REVISADOS) ---
+
+    private static ResultadosJuego calcularMetricas(String nombre, List<Integer> jugada, List<Integer> resultado) {
+        List<Integer> coincidencias = jugada.stream().filter(resultado::contains).collect(Collectors.toList());
+        double delta = calcularDelta(jugada, resultado);
+        System.out.printf("[%s] Aciertos: %d %s | Delta: %.2f\n", nombre, coincidencias.size(), coincidencias, delta);
+        return new ResultadosJuego(nombre, coincidencias.size(), delta);
     }
 
     private static double calcularDelta(List<Integer> jugada, List<Integer> resultado) {
@@ -208,196 +135,87 @@ public class AnalizadorEfectividad {
         return sumaDiferencias / 6.0;
     }
 
-    // --- INTERPRETACIÓN ACTUALIZADA ---
-    private static void interpretarDelta(double delta) {
-        System.out.print("ESTADO DEL ALGORITMO: ");
-        if (delta <= 2.5) System.out.println("🔥 ¡CRÍTICO! Estuviste encima de los números.");
-        else if (delta <= 4.0) System.out.println("🟢 ESTABLE. Calibración 0.96 funcionando.");
-        else System.out.println("🟡 DISPERSO. Requiere ajuste de pesos o revisión del Rey.");
-    }
-
-    public static int obtenerNumeroRey() {
-        String rutaCSV = "reporte_precision_matrix.csv";
-        File archivo = new File(rutaCSV);
-        Map<Integer, Double> puntajeNumeros = new HashMap<>();
-
-        // 1. Verificación de existencia del archivo
-        if (!archivo.exists() || archivo.length() == 0) {
-            System.out.println("ℹ️ CSV de auditoría vacío. Usando Rey del histórico principal...");
-            List<Integer> top = GeneradorMatrix.generarJugadaMaestra("historico_melate.txt");
-            return top.get(top.size() - 1); // Retorna el de mayor peso
-        }
-
-        // 2. Proceso de minería sobre el CSV
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaCSV))) {
-            String linea = br.readLine(); // Saltar encabezado
-            
+    public static List<Integer> obtenerSorteoPorNumero(int numeroSorteoBusqueda) {
+        String rutaHistorico = "historico_melate.txt";
+        List<Integer> resultado = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaHistorico))) {
+            br.readLine();
+            String linea;
             while ((linea = br.readLine()) != null) {
-                String[] columnas = linea.split(",");
-                if (columnas.length >= 4) {
-                    // Limpiar formato de la jugada registrada
-                    String jugadaLimpia = columnas[1].replace("\"", "").replace("[", "").replace("]", "");
-                    double delta = Double.parseDouble(columnas[3]);
-                    
-                    // Algoritmo de puntuación: a menor delta, más puntos al número
-                    double puntos = 10.0 / (delta + 1.0); 
-
-                    String[] nums = jugadaLimpia.split(",");
-                    for (String n : nums) {
-                        int num = Integer.parseInt(n.trim());
-                        puntajeNumeros.put(num, puntajeNumeros.getOrDefault(num, 0.0) + puntos);
+                String[] datos = linea.split(",");
+                if (datos.length >= 8) {
+                    String idLimpio = datos[1].trim().replaceAll("[^0-9]", "");
+                    if (!idLimpio.isEmpty() && Integer.parseInt(idLimpio) == numeroSorteoBusqueda) {
+                        for (int j = 2; j <= 7; j++) resultado.add(Integer.parseInt(datos[j].trim()));
+                        break;
                     }
                 }
             }
-        } catch (Exception e) {
-            System.err.println("Error procesando Rey: " + e.getMessage());
-            return 29; // Retorno de seguridad (tu número ancla)
-        }
-
-        return puntajeNumeros.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(29);
+        } catch (Exception e) {}
+        return resultado;
     }
-    
-    // ... (Mantén tus métodos de CSV y ResumenMarzo igual)
+
+    public static void ejecutarSimetriaEspejo(List<Integer> jugadaActual) {
+        int[] ciclos = {4100, 4000, 3900, 3800, 3700};
+        System.out.println("\n🪞 INICIANDO ESCÁNER DE SIMETRÍA ESPEJO");
+        System.out.println("===========================================================");
+        for (int ciclo : ciclos) {
+            List<Integer> hist = obtenerSorteoPorNumero(ciclo);
+            if (!hist.isEmpty()) {
+                long coinc = jugadaActual.stream().filter(hist::contains).count();
+                System.out.printf("🔹 Ciclo %d: %-18s | Coincidencias: %d\n", ciclo, hist, coinc);
+            }
+        }
+        System.out.println("===========================================================\n");
+    }
 
     public static void limpiarPipeline() {
-        System.out.println("🧹 Iniciando limpieza de registros duplicados...");
-
-        // 1. Limpiar historial_jugadas_melate.txt (Solo deja la última entrada)
-        File txtFile = new File("historial_jugadas_melate.txt");
-        if (txtFile.exists()) {
-            try {
-                List<String> lineas = Files.readAllLines(txtFile.toPath());
-                if (lineas.size() > 4) { // Si hay más de una jugada (cada jugada son ~3 líneas)
-                    List<String> ultimaJugada = lineas.subList(lineas.size() - 3, lineas.size());
-                    Files.write(txtFile.toPath(), ultimaJugada);
-                    System.out.println("✅ TXT depurado: Solo queda la jugada vigente.");
-                }
-            } catch (IOException e) { System.err.println("Error limpiando TXT: " + e.getMessage()); }
-        }
-
-        // 2. Limpiar reporte_precision_matrix.csv (Remueve filas con la misma jugada)
-        File csvFile = new File("reporte_precision_matrix.csv");
-        if (csvFile.exists()) {
-            try {
+        try {
+            File csvFile = new File("reporte_precision_matrix.csv");
+            if (csvFile.exists()) {
                 List<String> lineasCsv = Files.readAllLines(csvFile.toPath());
                 if (lineasCsv.size() > 1) {
-                    String header = lineasCsv.get(0);
-                    // Usamos un LinkedHashMap para mantener el orden pero eliminar duplicados de la jugada
                     Map<String, String> unicos = new LinkedHashMap<>();
                     for (int i = 1; i < lineasCsv.size(); i++) {
                         String[] col = lineasCsv.get(i).split(",");
                         if (col.length > 1) unicos.put(col[1], lineasCsv.get(i));
                     }
-                    
-                    List<String> salidaCsv = new ArrayList<>();
-                    salidaCsv.add(header);
-                    salidaCsv.addAll(unicos.values());
-                    Files.write(csvFile.toPath(), salidaCsv);
-                    System.out.println("✅ CSV depurado: Duplicados eliminados.");
+                    List<String> salida = new ArrayList<>();
+                    salida.add(lineasCsv.get(0));
+                    salida.addAll(unicos.values());
+                    Files.write(csvFile.toPath(), salida);
                 }
-            } catch (IOException e) { System.err.println("Error limpiando CSV: " + e.getMessage()); }
-        }
-    }
-    
-    /**
-     * Realiza la auditoría integral de la jugada contra las tres variantes.
-     * Registra en el CSV el resultado más significativo para el aprendizaje de la Matrix.
-     */
-    public static void auditarSorteoCompleto(List<Integer> miJugada, 
-                                            List<Integer> resMelate, 
-                                            List<Integer> resRevancha, 
-                                            List<Integer> resRevanchita) {
-        
-        System.out.println("\n🔍 AUDITORÍA DE LA MATRIX - SORTEO 4196");
-        System.out.println("==========================================");
-        System.out.println("JUGADA COMPRADA: " + miJugada);
-        System.out.println("------------------------------------------");
-
-        // Procesamos cada juego y obtenemos sus métricas
-        ResultadosJuego melate = calcularMetricas("MELATE    ", miJugada, resMelate);
-        ResultadosJuego revancha = calcularMetricas("REVANCHA  ", miJugada, resRevancha);
-        ResultadosJuego revanchita = calcularMetricas("REVANCHITA", miJugada, resRevanchita);
-
-        // Determinamos cuál fue el mejor desempeño (menor Delta)
-        ResultadosJuego mejor = melate;
-        if (revancha.delta < mejor.delta) mejor = revancha;
-        if (revanchita.delta < mejor.delta) mejor = revanchita;
-
-        System.out.println("------------------------------------------");
-        System.out.println("🏆 MEJOR DESEMPEÑO: " + mejor.nombreJuego);
-        
-        // PERSISTENCIA: Guardamos el mejor resultado en el CSV para entrenamiento del Número Rey
-        exportarEfectividadCSV(miJugada.toString(), mejor.aciertos, mejor.delta);
-        
-        System.out.println("==========================================\n");
+            }
+        } catch (Exception e) {}
     }
 
-    /**
-     * Clase interna de apoyo para estructurar los resultados de la auditoría.
-     */
-    private static class ResultadosJuego {
-        String nombreJuego;
-        int aciertos;
-        double delta;
-
-        ResultadosJuego(String nombre, int a, double d) {
-            this.nombreJuego = nombre;
-            this.aciertos = a;
-            this.delta = d;
-        }
+    public static void exportarEfectividadCSV(String jugada, int aciertos, double delta) {
+        try (FileWriter fw = new FileWriter("reporte_precision_matrix.csv", true); PrintWriter pw = new PrintWriter(fw)) {
+            pw.printf("%s,\"%s\",%d,%.2f\n", new Date().toString(), jugada, aciertos, delta);
+        } catch (Exception e) {}
     }
 
-    private static ResultadosJuego calcularMetricas(String nombre, List<Integer> jugada, List<Integer> resultado) {
-        // 1. Calcular aciertos directos
-        List<Integer> coincidencias = jugada.stream()
-                .filter(resultado::contains)
-                .collect(Collectors.toList());
-        
-        // 2. Calcular Delta (Cercanía promedio) usando tu método existente calcularDelta
-        double delta = calcularDelta(jugada, resultado);
-        
-        System.out.printf("[%s] Aciertos: %d %s | Delta: %.2f\n", 
-                          nombre, coincidencias.size(), coincidencias, delta);
-        
-        return new ResultadosJuego(nombre, coincidencias.size(), delta);
-    }
-    
-   //GG Nuevo Metodo 
-    
-    public static void verificarSingularidadHistórica(List<Integer> jugadaActual) {
-        String rutaHistorico = "historico_melate.txt";
-        int coincidenciasTotales = 0;
-        
-        System.out.println("\n📜 Consultando Master Data Histórico (1984 - 2026)...");
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaHistorico))) {
+    public static void generarResumenMarzo() {
+        try (BufferedReader br = new BufferedReader(new FileReader("reporte_precision_matrix.csv"))) {
+            br.readLine();
+            int totalAciertos = 0, procesadas = 0;
             String linea;
-            br.readLine(); // Saltar header
             while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split(",");
-                if (datos.length < 8) continue;
-                
-                List<Integer> historico = new ArrayList<>();
-                for (int j = 2; j <= 7; j++) historico.add(Integer.parseInt(datos[j]));
-                Collections.sort(historico);
-                
-                if (historico.equals(jugadaActual)) {
-                    coincidenciasTotales++;
-                    System.out.println("⚠️ ¡COINCIDENCIA EXACTA ENCONTRADA! Sorteo: " + datos[1] + " Fecha: " + datos[10]);
-                }
+                String[] col = linea.split(",");
+                totalAciertos += Integer.parseInt(col[2].trim());
+                procesadas++;
             }
-            
-            if (coincidenciasTotales == 0) {
-                System.out.println("✅ JUGADA ÚNICA: Esta combinación nunca ha ganado el premio mayor. ¡La Matrix está explorando terreno virgen!");
-            } else {
-                System.out.println("📊 Esta jugada se ha repetido " + coincidenciasTotales + " veces en la historia.");
-            }
-        } catch (IOException e) { System.err.println("Error en query histórico: " + e.getMessage()); }
+            System.out.println("\n==========================================");
+            System.out.println("   RESUMEN ESTADÍSTICO DE LA MATRIX");
+            System.out.println("==========================================");
+            System.out.println("SORTEOS ANALIZADOS: " + procesadas);
+            System.out.println("ACIERTOS TOTALES: " + totalAciertos);
+            System.out.println("==========================================\n");
+        } catch (Exception e) {}
     }
-    
-   //rgg 
 
+    private static class ResultadosJuego {
+        String nombreJuego; int aciertos; double delta;
+        ResultadosJuego(String n, int a, double d) { this.nombreJuego = n; this.aciertos = a; this.delta = d; }
+    }
 }
