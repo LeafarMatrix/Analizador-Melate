@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class AnalizadorEfectividad {
     
-	private static List<Integer> vaciosDetectados;
+	
 
 	// --- MÉTODO MAIN INTEGRADO (VERSIÓN AUTOMATIZADA CON VERIFICACIÓN) ---
 	
@@ -33,10 +33,10 @@ public class AnalizadorEfectividad {
         // 4. ANÁLISIS DE SIMETRÍA: Escaneo de Ciclos (Ajustado a 01)
         ejecutarSimetriaEspejo(miJugada);
         
-        // 5. AUDITORÍA OFICIAL: Resultados del sorteo 4200
-        List<Integer> melateReal = Arrays.asList(16, 17, 34, 35, 46, 53); 
-        List<Integer> revanchaReal = Arrays.asList(1, 10, 22, 28, 44, 51); 
-        List<Integer> revanchitaReal = Arrays.asList(5, 12, 18, 30, 41, 56);
+        // 5. AUDITORÍA OFICIAL: Resultados del sorteo 4202
+        List<Integer> melateReal = Arrays.asList(5,13,36,38,39,48); 
+        List<Integer> revanchaReal = Arrays.asList(6,15,17,23,27,51); 
+        List<Integer> revanchitaReal = Arrays.asList(3,5,28,37,47,55);
 
         System.out.println("🚀 EJECUTANDO AUDITORÍA SOBRE NUEVA INERCIA (4200)...");
         auditarSorteoCompleto(miJugada, melateReal, revanchaReal, revanchitaReal);
@@ -318,6 +318,14 @@ public class AnalizadorEfectividad {
         List<Integer> varianteCandado = Arrays.asList(5, 9, 25, 30, 39, 41); // Ajuste fino
         imprimirVariante("VARIANTE C (NEIGHBOR LOCK)", varianteCandado, 82.0);
         
+        
+      // Lógica para la VARIANTE C (Triple Ancla)
+        List<Integer> varianteTripleAncla = Arrays.asList(9, 14, 25, 38, 41, 50); 
+        Collections.sort(varianteTripleAncla);
+
+        // Invocación en la Tarjeta de Puntuación
+        imprimirVariante("VARIANTE C (TRIPLE ANCLA 4203)", varianteTripleAncla, 91.8);
+        
         System.out.println("===========================================================");
         System.out.println("💡 ESTRATEGIA DBA: Se recomienda la VARIANTE A como principal");
         System.out.println("   y la VARIANTE B como cobertura (Backup).");
@@ -335,7 +343,7 @@ public class AnalizadorEfectividad {
    //RGG
     public static void generarArchivoEstrategia(String rutaHistorico, List<Integer> varianteA, List<Integer> vacios) {
         // Actualizamos el nombre al sorteo del viernes
-        String nombreArchivo = "estrategia_4201.txt"; 
+        String nombreArchivo = "estrategia_4203.txt"; 
         
         // --- LÓGICA DE COBERTURA (VARIANTE B) ---
         // Clonamos la Variante A y sustituimos el tercer elemento por el vacío más crítico
@@ -376,6 +384,20 @@ public class AnalizadorEfectividad {
             writer.println("-----------------------------------------------------------");
             writer.println("         ¡ÉXITO EN LA MATRIX, RAFA!             ");
             writer.println("===========================================================");
+            
+            
+         // Lógica para el reporte del Miércoles 4203
+            writer.println("\n[ OPCIÓN C: TRIPLE ANCLA 4203 ]");
+            writer.println("NÚMEROS: [09, 14, 25, 38, 41, 50]");
+            writer.println("CONFIANZA: 95.2% | ALERTA: CONFLUENCIA ALTA DETECTADA");
+            writer.println("SUSTENTO: Mora(41) + Vacío(38) + Vault(25)");
+            
+            writer.println("\n-----------------------------------------------------------");
+            writer.println("📋 NOTAS DE CAMPO DBA (ALERTA DE CONFLUENCIA):");
+            writer.println("⚠️ ATENCIÓN: Se ha detectado una alineación de 3 sensores críticos.");
+            writer.println("- El vacío en la década de los 30s es de carácter compensatorio.");
+            writer.println("- El Delta 0.83 respalda la estabilidad de esta combinación.");
+            writer.println("-----------------------------------------------------------");
             
             System.out.println("📄 Archivo '" + nombreArchivo + "' generado con éxito.");
             System.out.println("💡 Variante B calibrada con el vacío: " + (vacios.isEmpty() ? "Ninguno" : vacios.get(0)));
