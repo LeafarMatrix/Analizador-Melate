@@ -25,7 +25,16 @@ public class AnalizadorEfectividad {
    
         // 3. SEGURIDAD Y VECINOS
         verificarColisionReciente(miJugada);
-        analizarVecinosCriticos(miJugada);  
+        analizarVecinosCriticos(miJugada); 
+        
+     // ... después de generar miJugada
+        
+        // 3.5 SENSORES DE MISIÓN CRÍTICA
+        analizarVecinosCriticos(miJugada);
+        detectarVaciosEstadisticos(rutaHistorico);
+        monitorearDeltaTiempoReal(miJugada, rutaHistorico); // <-- Nueva auditoría
+        
+        // ... seguir con la generación del archivo estrategia_4203.txt
         
         // 3.7 DETECCIÓN DE VACÍOS (Gap Analysis)
         List<Integer> vacios = detectarVaciosEstadisticos(rutaHistorico);
@@ -440,6 +449,36 @@ public class AnalizadorEfectividad {
         System.out.println("===========================================================\n");
         
         return vaciosCriticos;
+    }
+    
+    
+    public static void monitorearDeltaTiempoReal(List<Integer> jugadaProyectada, String rutaHistorico) {
+        System.out.println("\n🛰️ ACTIVANDO RADAR DE PRECISIÓN DELTA (REAL-TIME)");
+        System.out.println("===========================================================");
+        
+        // Calculamos la deriva promedio de los últimos 3 sorteos
+        double deltaAcumulado = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaHistorico))) {
+            br.readLine(); // Skip header
+            for (int i = 0; i < 3; i++) {
+                String linea = br.readLine();
+                if (linea == null) break;
+                String[] datos = linea.split(",");
+                List<Integer> hist = new ArrayList<>();
+                for (int j = 2; j <= 7; j++) hist.add(Integer.parseInt(datos[j].trim()));
+                
+                deltaAcumulado += calcularDelta(jugadaProyectada, hist);
+            }
+        } catch (Exception e) { }
+
+        double deltaPromedio = deltaAcumulado / 3.0;
+        String estadoMatrix = (deltaPromedio < 1.0) ? "🎯 CONVERGENCIA ALTA" : "📡 BUSCANDO SEÑAL";
+        
+        System.out.printf("📊 DELTA PROMEDIO ACTUAL: %.2f | ESTADO: %s\n", deltaPromedio, estadoMatrix);
+        if (deltaPromedio < 0.85) {
+            System.out.println("⚠️ ALERTA: La jugada está 'atrapada' en el flujo del azar real.");
+        }
+        System.out.println("===========================================================\n");
     }
     //RGG
 
