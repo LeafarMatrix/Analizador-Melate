@@ -1,187 +1,280 @@
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Herramienta unificada para analizar el historico de sorteos de Melate y
+ * Melate Retro, generar jugadas sugeridas y verificar boletos contra un
+ * resultado oficial.
+ *
+ * Sustituye a:
+ *   - AnalizadorMelate.java / AnalizadorMelateRetro.java (version anterior):
+ *     duplicaban la logica de parseo/estadisticas entre los dos juegos.
+ *   - AnalizadorEfectividad.java / GeneradorMatrix.java: pipeline separado
+ *     que solo cubria Melate, pero con mejor diseño (patron Strategy via
+ *     AjustePeso). Esa arquitectura es la que se adopto aqui como base
+ *     comun para ambos juegos.
+ *
+ * Ahora hay un solo punto de entrada, con las estrategias de ponderacion
+ * (AjustePeso) compartidas entre Melate y Melate Retro.
+ *
+ * IMPORTANTE: en un sorteo aleatorio y justo, la frecuencia historica de un
+ * numero NO tiene poder predictivo sobre el proximo sorteo -- cada sorteo es
+ * independiente de los anteriores. Esta herramienta no "predice" resultados:
+ * ayuda a generar jugadas diversas dentro de tu presupuesto y a evitar
+ * patrones estadisticamente atipicos (todo par, todo consecutivo, etc).
+ *
+ * Uso:
+ *   java AnalizadorMelate generar   [-i entrada] [-o salida] [-n cantidad]
+ *                                    [--producto MELATE|RETRO]
+ *                                    [--suma-min n] [--suma-max n]
+ *                                    [--excluir n1,n2,..] [--proteger n1,n2,..]
+ *   java AnalizadorMelate verificar -j n1,..,n6 -r n1,..,n6 [-a adicional]
+ *                                    [--modalidad MELATE|REVANCHA|REVANCHITA] [--min n]
+ *   java AnalizadorMelate -h | --help
+ */
 public class AnalizadorMelate {
 
+    static final String ARCHIVO_MELATE = "historico_melate.txt";
+    static final String ARCHIVO_RETRO = "historico_retro.csv";
+    static final String SALIDA_DEFECTO = "jugadas_generadas.csv";
+    static final int SUMA_MIN_DEFECTO = 130;
+    static final int SUMA_MAX_DEFECTO = 190;
+    static final double DECAIMIENTO_DEFECTO = 0.96;
+
     public static void main(String[] args) {
-        String archivoRuta = "historico_melate.txt";
-        
-        System.out.println("--- ACTUALIZANDO MODELO CON SORTEO 4192 ---");
-        
-        // 1. RESULTADOS OFICIALES SORTEO 4192 (Viernes 2 Marzo)
-     
-        
-        List<Integer> ganadorMelate = Arrays.asList(8, 24, 29, 33, 41, 50); 
-        int adicionalOficial = 23; 
-        
-        
-        List<Integer> ganadorRevancha = Arrays.asList(7,16,27,29,34,37);
-        List<Integer> ganadorRevanchita = Arrays.asList(2,3,10,22,31,47); 
-
-        // Tu Línea C del boleto
-        List<Integer> miLineaC = Arrays.asList(15, 22, 27, 30, 31, 43);
-        
-        System.out.println("\n--- VERIFICANDO PREMIOS DEL BOLETO ---");
-        verificarBoletoConAdicional(miLineaC, ganadorMelate, adicionalOficial, "MELATE NATURAL");
-        verificarBoleto(miLineaC, ganadorRevancha, "REVANCHA");
-        verificarBoleto(miLineaC, ganadorRevanchita, "REVANCHITA");
-
-        // 2. GENERACIÓN OPTIMIZADA
-        System.out.println("\n--- GENERANDO JUEGOS PARA EL PRÓXIMO MIÉRCOLES ---");
-        ejecutarProcesoGeneracion(archivoRuta, 4);
-    }
-
-    // --- MÉTODOS DE VERIFICACIÓN ---
-
-    private static void verificarBoletoConAdicional(List<Integer> jugada, List<Integer> resultado, int adicional, String modalidad) {
-        List<Integer> aciertos = jugada.stream().filter(resultado::contains).collect(Collectors.toList());
-        boolean tieneAdicional = jugada.contains(adicional);
-        int total = aciertos.size();
-
-        System.out.println("[" + modalidad + "] Aciertos: " + aciertos + (tieneAdicional ? " + ADICIONAL (" + adicional + ")" : ""));
-        if (total >= 3 || (total == 2 && tieneAdicional)) {
-            System.out.println(">>> ¡PREMIO DETECTADO EN " + modalidad + "! <<<");
-        } else {
-            System.out.println("Sin premio suficiente.");
+        if (args.length == 0) {
+            ejecutarGenerar(new String[0]); // comportamiento por defecto: generar para Melate
+            return;
         }
-        System.out.println("-------------------------");
-    }
 
-    private static void verificarBoleto(List<Integer> jugada, List<Integer> resultado, String modalidad) {
-        List<Integer> aciertos = jugada.stream().filter(resultado::contains).collect(Collectors.toList());
-        int min = modalidad.equals("REVANCHITA") ? 6 : 3;
+        String comando = args[0];
+        String[] resto = Arrays.copyOfRange(args, 1, args.length);
 
-        System.out.println("[" + modalidad + "] Aciertos (" + aciertos.size() + "): " + aciertos);
-        if (aciertos.size() >= min) {
-            System.out.println(">>> ¡PREMIO DETECTADO EN " + modalidad + "! <<<");
-        } else {
-            System.out.println("Sin premio (Mínimo requerido: " + min + ")");
-        }
-        System.out.println("-------------------------");
-    }
-
-    // --- LÓGICA DE ANÁLISIS Y GENERACIÓN ---
-
-    public static void ejecutarProcesoGeneracion(String ruta, int cantidadJuegos) {
-        Map<Integer, Double> frecuenciaNumeros = new HashMap<>();
-        Map<Integer, Integer> ultimaAparicionDistancia = new HashMap<>();
-        List<String> todasLasLineas = new ArrayList<>();
-
-        for (int n = 1; n <= 56; n++) ultimaAparicionDistancia.put(n, 999);
-
-        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
-            String linea;
-            br.readLine(); // Saltar encabezado
-            while ((linea = br.readLine()) != null) {
-                if (!linea.trim().isEmpty()) todasLasLineas.add(linea);
+        switch (comando) {
+            case "generar" -> ejecutarGenerar(resto);
+            case "verificar" -> ejecutarVerificar(resto);
+            case "-h", "--help" -> mostrarAyuda();
+            default -> {
+                System.err.println("Comando no reconocido: " + comando);
+                mostrarAyuda();
             }
+        }
+    }
 
-            if (todasLasLineas.isEmpty()) return;
+    private static void mostrarAyuda() {
+        System.out.printf("""
+            Uso:
+              java AnalizadorMelate generar   [-i entrada] [-o salida] [-n cantidad] [--producto MELATE|RETRO]
+                                               [--suma-min n] [--suma-max n] [--excluir n1,n2,..] [--proteger n1,n2,..]
+              java AnalizadorMelate verificar -j n1,..,n6 -r n1,..,n6 [-a adicional] [--modalidad MELATE|REVANCHA|REVANCHITA] [--min n]
+              java AnalizadorMelate -h
 
-            // Análisis de pesos exponenciales
-            for (int i = 0; i < todasLasLineas.size(); i++) {
-                String[] campos = todasLasLineas.get(i).split(",");
-                if (campos.length >= 8) {
-                    double peso = Math.pow(0.95, i) * 100;
-                    for (int j = 2; j <= 7; j++) {
-                        int num = Integer.parseInt(campos[j].trim());
-                        frecuenciaNumeros.put(num, frecuenciaNumeros.getOrDefault(num, 0.0) + peso);
-                        if (ultimaAparicionDistancia.get(num) == 999) ultimaAparicionDistancia.put(num, i);
-                    }
+            generar:
+              -i           archivo historico de entrada (por defecto segun --producto)
+              -o           archivo de salida para las jugadas (por defecto: %s)
+              -n           cantidad de jugadas a generar (por defecto: 4)
+              --producto   MELATE (usa %s) o RETRO (usa %s); por defecto MELATE
+              --suma-min   suma minima aceptada (por defecto: %d)
+              --suma-max   suma maxima aceptada (por defecto: %d)
+              --excluir    numeros a evitar, separados por coma (ej. numeros de una combinacion perdedora conocida)
+              --proteger   numeros que se salvan de --excluir aunque esten en esa lista
+
+            verificar:
+              -j          tu jugada, 6 numeros separados por coma
+              -r          resultado oficial del sorteo, 6 numeros separados por coma
+              -a          numero adicional del sorteo oficial (opcional)
+              --modalidad MELATE (min 3 aciertos, adicional cubre el caso de 2+adicional),
+                          REVANCHA (min 3), REVANCHITA (min 6)
+              --min       aciertos minimos para premio si no usas --modalidad
+            %n""", SALIDA_DEFECTO, ARCHIVO_MELATE, ARCHIVO_RETRO, SUMA_MIN_DEFECTO, SUMA_MAX_DEFECTO);
+    }
+
+    // =========================================================
+    // MODO: GENERAR
+    // =========================================================
+
+    private static void ejecutarGenerar(String[] args) {
+        String producto = "MELATE";
+        String entrada = null;
+        String salida = SALIDA_DEFECTO;
+        int cantidad = 4;
+        int sumaMin = SUMA_MIN_DEFECTO;
+        int sumaMax = SUMA_MAX_DEFECTO;
+        Set<Integer> excluidos = new HashSet<>();
+        Set<Integer> protegidos = new HashSet<>();
+
+        try {
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-i" -> entrada = args[++i];
+                    case "-o" -> salida = args[++i];
+                    case "-n" -> cantidad = Integer.parseInt(args[++i]);
+                    case "--producto" -> producto = args[++i].toUpperCase();
+                    case "--suma-min" -> sumaMin = Integer.parseInt(args[++i]);
+                    case "--suma-max" -> sumaMax = Integer.parseInt(args[++i]);
+                    case "--excluir" -> excluidos.addAll(parseNumeros(args[++i]));
+                    case "--proteger" -> protegidos.addAll(parseNumeros(args[++i]));
+                    default -> System.err.println("Opcion ignorada: " + args[i]);
                 }
             }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Falta un valor despues de una de las opciones.");
+            mostrarAyuda();
+            return;
+        }
 
-            List<Integer> calientes = obtenerTopNumeros(frecuenciaNumeros, 12);
-            List<Integer> frios = ultimaAparicionDistancia.entrySet().stream()
-                    .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
-                    .limit(12).map(Map.Entry::getKey).collect(Collectors.toList());
+        if (entrada == null) {
+            entrada = "RETRO".equals(producto) ? ARCHIVO_RETRO : ARCHIVO_MELATE;
+        }
 
-            // Obtener el sorteo anterior real para la lógica de vecinos
-            List<Integer> anterior = new ArrayList<>();
-            String[] camposUltima = todasLasLineas.get(0).split(",");
-            for (int j = 2; j <= 7; j++) anterior.add(Integer.parseInt(camposUltima[j].trim()));
+        Path rutaEntrada = Path.of(entrada);
+        if (!Files.exists(rutaEntrada)) {
+            System.err.println("No se encontro el archivo de historico: " + entrada);
+            return;
+        }
 
-            // Generar los juegos solicitados
-            for (int i = 0; i < cantidadJuegos; i++) {
-                char letra = (char) ('A' + i);
-                System.out.print("Generando juego " + letra + "... ");
-                String sugerencia = generarSugerenciaPro(calientes, frios, anterior);
-                exportarSugerencia(sugerencia);
-            }
-
+        List<Sorteo> historial;
+        try {
+            historial = HistorialParser.parsear(rutaEntrada);
         } catch (IOException e) {
-            System.err.println("Error procesando historial: " + e.getMessage());
+            System.err.println("Error leyendo el historico: " + e.getMessage());
+            return;
+        }
+
+        if (historial.isEmpty()) {
+            System.err.println("El historico no contiene sorteos validos.");
+            return;
+        }
+
+        System.out.println("Producto: " + producto + " | Entrada: " + entrada
+                + " | Sorteos cargados: " + historial.size()
+                + " (lineas descartadas por formato invalido: " + HistorialParser.ultimosDescartados + ")");
+
+        List<AjustePeso> ajustes = List.of(
+                new PesoBaseRecencia(DECAIMIENTO_DEFECTO),
+                new AjusteTendenciaReciente(),
+                new AjusteVaciosCriticos()
+        );
+
+        GeneradorJugadas generador = new GeneradorJugadas(sumaMin, sumaMax, excluidos, protegidos);
+        Map<Integer, Double> pesos = generador.calcularPesos(historial, ajustes);
+        imprimirTopPesos(pesos);
+
+        List<Integer> anterior = historial.get(0).numeros();
+
+        List<List<Integer>> jugadas = new ArrayList<>();
+        for (int i = 0; i < cantidad; i++) {
+            List<Integer> jugada = generador.generar(pesos, anterior);
+            jugadas.add(jugada);
+            char letra = (char) ('A' + i);
+            System.out.printf("Jugada %s: %s (suma=%d)%n", letra, jugada, suma(jugada));
+        }
+
+        try {
+            exportarJugadas(Path.of(salida), jugadas, producto);
+            System.out.println("Jugadas guardadas en: " + salida);
+        } catch (IOException e) {
+            System.err.println("No se pudieron guardar las jugadas generadas: " + e.getMessage());
         }
     }
 
-    private static String generarSugerenciaPro(List<Integer> calientes, List<Integer> frios, List<Integer> anterior) {
-        Random rand = new Random();
-        List<Integer> sugerencia;
-        int intentos = 0;
-        do {
-            Set<Integer> conjunto = new TreeSet<>();
-            // Lógica de vecinos de Rafael
-            int numBase = anterior.get(rand.nextInt(anterior.size()));
-            int vecino = rand.nextBoolean() ? numBase + 1 : numBase - 1;
-            if (vecino < 1) vecino = 2; if (vecino > 56) vecino = 55;
-            conjunto.add(vecino);
-
-            while (conjunto.size() < 3) conjunto.add(calientes.get(rand.nextInt(calientes.size())));
-            while (conjunto.size() < 4) conjunto.add(frios.get(rand.nextInt(frios.size())));
-            while (conjunto.size() < 6) conjunto.add(rand.nextInt(56) + 1);
-            
-            sugerencia = new ArrayList<>(conjunto);
-            intentos++;
-        } while ((!validarReglas(sugerencia, anterior) || !esDispersa(sugerencia)) && intentos < 30000);
-
-        String res = "COMBINACIÓN: " + sugerencia + " SUMA: " + sugerencia.stream().mapToInt(Integer::intValue).sum();
-        System.out.println(res);
-        return res + "\nFECHA: " + new Date();
+    private static void imprimirTopPesos(Map<Integer, Double> pesos) {
+        List<Integer> top = pesos.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .limit(10)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        System.out.println("Top 10 numeros por peso ponderado: " + top);
     }
 
- // --- AJUSTE DE REGLAS PARA EL DOMINGO 29 ---
-    private static boolean validarReglas(List<Integer> lista, List<Integer> sorteoAnterior) {
-        Collections.sort(lista);
-        int pares = 0, suma = 0, consecutivos = 0;
-        List<Integer> primos = Arrays.asList(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53);
+    private static int suma(List<Integer> l) {
+        return l.stream().mapToInt(Integer::intValue).sum();
+    }
 
-        for (int i = 0; i < lista.size(); i++) {
-            int n = lista.get(i);
-            suma += n;
-            if (n % 2 == 0) pares++;
-            if (primos.contains(n)) {
-			}
-            if (i < lista.size() - 1 && lista.get(i + 1) - n == 1) consecutivos++;
+    private static void exportarJugadas(Path salida, List<List<Integer>> jugadas, String producto) throws IOException {
+        boolean esNuevo = !Files.exists(salida);
+        try (BufferedWriter bw = Files.newBufferedWriter(salida, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            if (esNuevo) {
+                bw.write("fecha,producto,letra,numeros,suma,pares,impares");
+                bw.newLine();
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String fecha = sdf.format(new Date());
+            for (int i = 0; i < jugadas.size(); i++) {
+                List<Integer> j = jugadas.get(i);
+                long pares = j.stream().filter(n -> n % 2 == 0).count();
+                char letra = (char) ('A' + i);
+                bw.write(String.format("%s,%s,%c,%s,%d,%d,%d",
+                        fecha, producto, letra,
+                        j.stream().map(String::valueOf).collect(Collectors.joining("-")),
+                        suma(j), pares, j.size() - pares));
+                bw.newLine();
+            }
+        }
+    }
+
+    // =========================================================
+    // MODO: VERIFICAR
+    // =========================================================
+
+    private static void ejecutarVerificar(String[] args) {
+        List<Integer> jugada = null;
+        List<Integer> resultado = null;
+        Integer adicional = null;
+        String modalidad = null;
+        Integer minManual = null;
+
+        try {
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-j" -> jugada = parseNumeros(args[++i]);
+                    case "-r" -> resultado = parseNumeros(args[++i]);
+                    case "-a" -> adicional = Integer.parseInt(args[++i]);
+                    case "--modalidad" -> modalidad = args[++i].toUpperCase();
+                    case "--min" -> minManual = Integer.parseInt(args[++i]);
+                    default -> System.err.println("Opcion ignorada: " + args[i]);
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Falta un valor despues de una de las opciones.");
+            mostrarAyuda();
+            return;
         }
 
-        // CAMBIO: Elevamos la suma a 140-220 porque los números altos (50+) están despertando
-        boolean sumaValida = (suma >= 140 && suma <= 220);
-        
-        // CAMBIO: Filtro de "Inercia de Marzo" (El 29 y 41 están repitiendo mucho)
-        boolean tieneNumerosCalientes = lista.contains(29) || lista.contains(41) || lista.contains(23);
-
-        return sumaValida && (consecutivos >= 1) && (pares >= 2 && pares <= 4) && tieneNumerosCalientes;
-    }
-
-    private static boolean esDispersa(List<Integer> numeros) {
-        int contiguos = 0;
-        for (int i = 0; i < numeros.size() - 1; i++) {
-            if (numeros.get(i + 1) - numeros.get(i) <= 2) contiguos++;
+        if (jugada == null || resultado == null) {
+            System.err.println("Faltan argumentos obligatorios: -j (tu jugada) y -r (resultado oficial).");
+            mostrarAyuda();
+            return;
         }
-        return contiguos <= 2;
+
+        int minimo = minManual != null ? minManual : switch (modalidad == null ? "" : modalidad) {
+            case "REVANCHITA" -> 6;
+            case "REVANCHA" -> 3;
+            default -> 3; // MELATE u otra modalidad no reconocida
+        };
+        boolean contarAdicional = adicional != null && "MELATE".equals(modalidad);
+
+        Verificador.verificar(jugada, resultado, adicional, minimo, contarAdicional,
+                modalidad == null ? "PERSONALIZADA" : modalidad);
     }
 
-    private static List<Integer> obtenerTopNumeros(Map<Integer, Double> mapa, int cantidad) {
-        return mapa.entrySet().stream()
-                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
-                .limit(cantidad).map(Map.Entry::getKey).collect(Collectors.toList());
-    }
-
-    private static void exportarSugerencia(String contenido) {
-        try (FileWriter fw = new FileWriter("historial_jugadas_melate.txt", true); 
-             PrintWriter pw = new PrintWriter(fw)) {
-            pw.println("-------------------------\n" + contenido);
-        } catch (Exception e) {}
+    private static List<Integer> parseNumeros(String csv) {
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 }
