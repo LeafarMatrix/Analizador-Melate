@@ -1,0 +1,1 @@
+public record EntradaFrecuencia<T>(T combinacion, int frecuencia) {}
