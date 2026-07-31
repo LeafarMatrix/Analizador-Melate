@@ -113,6 +113,7 @@ public class AnalizadorMelate {
                 + " | Sorteos cargados: " + historial.size()
                 + " (lineas descartadas por formato invalido: "
                 + HistorialParser.ultimosDescartados + ")");
+        avisarSiDatosDesactualizados(historial.get(0).fecha());
 
         AnalizadorParesTrios analizador = new AnalizadorParesTrios();
         analizador.analizar(historial);
@@ -147,6 +148,29 @@ public class AnalizadorMelate {
             System.out.println("Jugadas guardadas en: " + salida);
         } catch (IOException e) {
             System.err.println("No se pudieron guardar las jugadas: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Avisa si el sorteo mas reciente del historico cargado tiene mas de unos
+     * pocos dias de antiguedad. Esto NO afecta los pesos calculados; es solo
+     * un chequeo de higiene de datos para evitar generar jugadas "asertivas"
+     * para el sorteo de esta noche usando un historico desactualizado.
+     */
+    private static void avisarSiDatosDesactualizados(String fechaTexto) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            sdf.setLenient(false);
+            Date ultima = sdf.parse(fechaTexto);
+            long dias = (new Date().getTime() - ultima.getTime()) / (1000L * 60 * 60 * 24);
+            if (dias > 2) {
+                System.err.printf("AVISO: el sorteo mas reciente del historico es del %s (hace %d dia(s)). "
+                        + "Actualiza el archivo con los resultados mas recientes antes de generar las "
+                        + "jugadas para el sorteo de esta noche.%n", fechaTexto, dias);
+            }
+        } catch (Exception e) {
+            System.err.println("AVISO: no se pudo verificar la vigencia del historico (fecha ilegible: '"
+                    + fechaTexto + "').");
         }
     }
 
