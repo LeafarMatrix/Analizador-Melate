@@ -3,9 +3,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +23,17 @@ public class AnalizadorMelate {
     static final int    SUMA_MIN_DEFECTO    = 130;
     static final int    SUMA_MAX_DEFECTO    = 190;
     static final double DECAIMIENTO_DEFECTO = 0.96;
+
+    /** Nombre de dia (sin acentos, minuscula) -> constante de Calendar.DAY_OF_WEEK. */
+    private static final Map<String, Integer> DIAS_SEMANA = Map.of(
+            "domingo",   Calendar.SUNDAY,
+            "lunes",     Calendar.MONDAY,
+            "martes",    Calendar.TUESDAY,
+            "miercoles", Calendar.WEDNESDAY,
+            "jueves",    Calendar.THURSDAY,
+            "viernes",   Calendar.FRIDAY,
+            "sabado",    Calendar.SATURDAY
+    );
 
     public static void main(String[] args) {
         if (args.length == 0) { ejecutarGenerar(new String[0]); return; }
@@ -38,11 +51,12 @@ public class AnalizadorMelate {
         System.out.printf("""
             Uso:
               java AnalizadorMelate generar   [-i entrada] [-o salida] [-n cantidad]
-                                               [--producto MELATE|RETRO]
+                                               [--producto MELATE|RETRO|REVANCHA]
                                                [--suma-min n] [--suma-max n]
                                                [--diversidad n]
                                                [--top-pares n] [--top-trios n]
                                                [--excluir n1,n2,..] [--proteger n1,n2,..]
+                                               [--dia domingo|lunes|martes|miercoles|jueves|viernes|sabado]
               java AnalizadorMelate verificar  -j n1,..,n6 -r n1,..,n6 [-a adicional]
                                                [--modalidad MELATE|REVANCHA|REVANCHITA] [--min n]
               java AnalizadorMelate -h
@@ -65,6 +79,7 @@ public class AnalizadorMelate {
         int          topTrios   = 5;
         Set<Integer> excluidos  = new HashSet<>();
         Set<Integer> protegidos = new HashSet<>();
+        String       diaSemana  = null;
 
         try {
             for (int i = 0; i < args.length; i++) {
@@ -80,6 +95,7 @@ public class AnalizadorMelate {
                     case "--top-trios"  -> topTrios   = Integer.parseInt(args[++i]);
                     case "--excluir"    -> excluidos.addAll(parseNumeros(args[++i]));
                     case "--proteger"   -> protegidos.addAll(parseNumeros(args[++i]));
+                    case "--dia"        -> diaSemana  = args[++i];
                     default -> System.err.println("Opcion ignorada: " + args[i]);
                 }
             }
@@ -107,6 +123,18 @@ public class AnalizadorMelate {
         if (historial.isEmpty()) {
             System.err.println("El historico no contiene sorteos validos.");
             return;
+        }
+
+        if (diaSemana != null) {
+            int antes = historial.size();
+            historial = filtrarPorDiaSemana(historial, diaSemana);
+            if (historial.isEmpty()) {
+                System.err.println("No quedaron sorteos tras filtrar por dia '" + diaSemana
+                        + "' (revisa el nombre o las fechas del historico). Se aborta.");
+                return;
+            }
+            System.out.printf("Filtro --dia %s: %d -> %d sorteos (solo los que cayeron ese dia de la semana).%n",
+                    diaSemana, antes, historial.size());
         }
 
         System.out.println("Producto: " + producto + " | Entrada: " + entrada
@@ -149,6 +177,48 @@ public class AnalizadorMelate {
         } catch (IOException e) {
             System.err.println("No se pudieron guardar las jugadas: " + e.getMessage());
         }
+    }
+
+    /**
+     * Filtra el historial dejando solo los sorteos que cayeron en el dia de
+     * la semana indicado (ej. "domingo"), util para preparar el generador de
+     * cara a un sorteo especifico: Melate se juega miercoles, viernes y
+     * domingo, y cada sesion es un sorteo fisico independiente, asi que
+     * limitar el historico al mismo dia de la semana del proximo sorteo es
+     * una forma razonable (aunque igual heuristica, no predictiva) de
+     * acotar el analisis.
+     *
+     * Nota: al filtrar, la muestra se reduce a ~1/3 del historico total, por
+     * lo que las frecuencias de pares/trios y los "huecos" tendran mas
+     * ruido estadistico que al usar el historico completo.
+     */
+    private static List<Sorteo> filtrarPorDiaSemana(List<Sorteo> historial, String diaSemana) {
+        Integer objetivo = DIAS_SEMANA.get(normalizarDia(diaSemana));
+        if (objetivo == null) {
+            System.err.println("Dia de la semana no reconocido: '" + diaSemana
+                    + "'. Valores validos: domingo, lunes, martes, miercoles, jueves, viernes, sabado. "
+                    + "Se usa el historico completo sin filtrar.");
+            return historial;
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        sdf.setLenient(false);
+        Calendar cal = Calendar.getInstance();
+        List<Sorteo> filtrado = new ArrayList<>();
+        for (Sorteo s : historial) {
+            try {
+                Date fecha = sdf.parse(s.fecha());
+                cal.setTime(fecha);
+                if (cal.get(Calendar.DAY_OF_WEEK) == objetivo) filtrado.add(s);
+            } catch (Exception e) {
+                // fecha ilegible: el sorteo se omite del filtro, no detiene el proceso
+            }
+        }
+        return filtrado;
+    }
+
+    private static String normalizarDia(String s) {
+        String sinAcentos = Normalizer.normalize(s.toLowerCase().trim(), Normalizer.Form.NFD);
+        return sinAcentos.replaceAll("\\p{M}", "");
     }
 
     /**
