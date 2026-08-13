@@ -51,7 +51,7 @@ public class AnalizadorMelate {
         System.out.printf("""
             Uso:
               java AnalizadorMelate generar   [-i entrada] [-o salida] [-n cantidad]
-                                               [--producto MELATE|RETRO|REVANCHA]
+                                               [--producto MELATE|RETRO]
                                                [--suma-min n] [--suma-max n]
                                                [--diversidad n]
                                                [--top-pares n] [--top-trios n]
@@ -105,7 +105,18 @@ public class AnalizadorMelate {
             return;
         }
 
-        if (entrada == null) entrada = "RETRO".equals(producto) ? ARCHIVO_RETRO : ARCHIVO_MELATE;
+        if (entrada == null) {
+            switch (producto) {
+                case "RETRO" -> entrada = ARCHIVO_RETRO;
+                case "MELATE" -> entrada = ARCHIVO_MELATE;
+                default -> {
+                    System.err.println("Producto no soportado para 'generar': '" + producto
+                            + "'. Usa MELATE o RETRO (o pasa -i para apuntar a un archivo especifico). "
+                            + "REVANCHA/REVANCHITA solo aplican al modo 'verificar'.");
+                    return;
+                }
+            }
+        }
 
         Path rutaEntrada = Path.of(entrada);
         if (!Files.exists(rutaEntrada)) {
@@ -125,6 +136,12 @@ public class AnalizadorMelate {
             return;
         }
 
+        // Se guarda ANTES de filtrar por dia: la vigencia del archivo se mide contra
+        // el sorteo mas reciente de verdad, no contra el ultimo que cayo en el dia
+        // filtrado (que puede tener hasta 6 dias de antiguedad por diseño y disparar
+        // un aviso de "desactualizado" incluso con el archivo recien actualizado).
+        String fechaMasReciente = historial.get(0).fecha();
+
         if (diaSemana != null) {
             int antes = historial.size();
             historial = filtrarPorDiaSemana(historial, diaSemana);
@@ -141,7 +158,7 @@ public class AnalizadorMelate {
                 + " | Sorteos cargados: " + historial.size()
                 + " (lineas descartadas por formato invalido: "
                 + HistorialParser.ultimosDescartados + ")");
-        avisarSiDatosDesactualizados(historial.get(0).fecha());
+        avisarSiDatosDesactualizados(fechaMasReciente);
 
         AnalizadorParesTrios analizador = new AnalizadorParesTrios();
         analizador.analizar(historial);

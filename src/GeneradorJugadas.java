@@ -41,6 +41,7 @@ public class GeneradorJugadas {
     private final Set<Integer> excluidos;
     private final Set<Integer> protegidos;
     private final int minDiferencia;
+    private final Random rand = new Random();
 
     public GeneradorJugadas(int sumaMin, int sumaMax, Set<Integer> excluidos, Set<Integer> protegidos) {
         this(sumaMin, sumaMax, excluidos, protegidos, MIN_DIFERENCIA_DEFECTO);
@@ -122,7 +123,6 @@ public class GeneradorJugadas {
     // ─── helpers privados ────────────────────────────────────────────────────
 
     private List<Integer> muestrear(List<Integer> bolsa, List<Integer> ultimoSorteo) {
-        Random rand = new Random();
         Set<Integer> conjunto = new TreeSet<>();
 
         // "Vecino del ultimo sorteo": nudge heuristico
