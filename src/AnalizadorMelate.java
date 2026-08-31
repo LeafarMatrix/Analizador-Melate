@@ -225,7 +225,9 @@ public class AnalizadorMelate {
             try {
                 Date fecha = sdf.parse(s.fecha());
                 cal.setTime(fecha);
-                if (cal.get(Calendar.DAY_OF_WEEK) == objetivo) filtrado.add(s);
+                if (cal.get(Calendar.DAY_OF_WEEK) == objetivo) {
+					filtrado.add(s);
+				}
             } catch (Exception e) {
                 // fecha ilegible: el sorteo se omite del filtro, no detiene el proceso
             }

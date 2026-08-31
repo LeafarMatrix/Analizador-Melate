@@ -23,11 +23,15 @@ public class HistorialParser {
         ultimosDescartados = 0;
         List<Sorteo> sorteos = new ArrayList<>();
         List<String> lineas = Files.readAllLines(ruta);
-        if (lineas.isEmpty()) return sorteos;
+        if (lineas.isEmpty()) {
+			return sorteos;
+		}
 
         for (int i = 1; i < lineas.size(); i++) { // linea 0 = encabezado
             String linea = lineas.get(i).trim();
-            if (linea.isEmpty()) continue;
+            if (linea.isEmpty()) {
+				continue;
+			}
             String[] campos = linea.split(",");
             if (campos.length < 8) {
                 ultimosDescartados++;
@@ -36,7 +40,9 @@ public class HistorialParser {
             try {
                 int concurso = Integer.parseInt(campos[1].trim());
                 List<Integer> numeros = new ArrayList<>();
-                for (int j = 2; j <= 7; j++) numeros.add(Integer.parseInt(campos[j].trim()));
+                for (int j = 2; j <= 7; j++) {
+					numeros.add(Integer.parseInt(campos[j].trim()));
+				}
                 Integer adicional = campos.length > 8 ? parseOpcional(campos[8]) : null;
                 String fecha = campos.length > 10 ? campos[10].trim() : "";
                 sorteos.add(new Sorteo(concurso, numeros, adicional, fecha));

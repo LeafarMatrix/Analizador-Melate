@@ -26,7 +26,9 @@ public class AjusteTendenciaReciente implements AjustePeso {
 
     @Override
     public void aplicar(Map<Integer, Double> pesos, List<Sorteo> historial) {
-        if (historial == null || historial.isEmpty()) return;
+        if (historial == null || historial.isEmpty()) {
+			return;
+		}
         int ventana = Math.min(VENTANA, historial.size());
         double esperado = ventana * 6.0 / GeneradorJugadas.TOTAL_NUMEROS;
 
@@ -39,7 +41,9 @@ public class AjusteTendenciaReciente implements AjustePeso {
 
         for (Map.Entry<Integer, Integer> e : conteo.entrySet()) {
             double razon = e.getValue() / esperado;
-            if (razon <= UMBRAL_SOBRE_ESPERADO) continue;
+            if (razon <= UMBRAL_SOBRE_ESPERADO) {
+				continue;
+			}
             double boost = Math.min(TOPE_BOOST, (razon - 1.0) * FACTOR_EXCESO);
             int num = e.getKey();
             pesos.put(num, pesos.getOrDefault(num, 0.0) * (1.0 + boost));

@@ -51,12 +51,16 @@ public class AjusteParesFrecuentes implements AjustePeso {
     @Override
     public void aplicar(Map<Integer, Double> pesos, List<Sorteo> historial) {
         int n = historial.size();
-        if (n == 0) return;
+        if (n == 0) {
+			return;
+		}
         double esperado = Math.max(1.0, n * PROB_PAR);
 
         for (EntradaFrecuencia<List<Integer>> entrada : analizador.topPares(topPares)) {
             double exceso = (entrada.frecuencia() / esperado) - 1.0;
-            if (exceso <= 0) continue; // no bonificar pares en linea o por debajo de lo esperado
+            if (exceso <= 0) {
+				continue; // no bonificar pares en linea o por debajo de lo esperado
+			}
             double bonus = exceso * factorBonus;
             for (int num : entrada.combinacion()) {
                 pesos.merge(num, bonus, Double::sum);

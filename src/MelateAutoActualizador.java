@@ -1,9 +1,16 @@
-import java.util.*;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.net.URI;
-import java.net.http.*;
-import java.nio.file.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * MelateAutoActualizador
@@ -56,23 +63,33 @@ public class MelateAutoActualizador {
         int maxConcursoEncontrado = ultimoConcurso;
 
         for (String[] campos : filas) {
-            if (campos.length < 11) continue;
+            if (campos.length < 11) {
+				continue;
+			}
             int concurso;
             try {
                 concurso = Integer.parseInt(campos[1].trim());
             } catch (NumberFormatException e) {
                 continue; // encabezado u otra fila no numérica
             }
-            if (concurso <= ultimoConcurso) continue;
+            if (concurso <= ultimoConcurso) {
+				continue;
+			}
 
-            // R1..R6 están en índices 2..7
+            // Se conserva la fila completa (NPRODUCTO,CONCURSO,R1..R6,R7,BOLSA,FECHA)
+            // para que el formato coincida con el resto de historico_melate.txt
+            // y con lo que espera MelateAnalizadorAvanzado.
             StringBuilder linea = new StringBuilder();
-            for (int i = 0; i < 6; i++) {
-                if (i > 0) linea.append(",");
-                linea.append(campos[2 + i].trim());
+            for (int i = 0; i < campos.length; i++) {
+                if (i > 0) {
+					linea.append(",");
+				}
+                linea.append(campos[i].trim());
             }
             nuevasLineas.add(linea.toString());
-            if (concurso > maxConcursoEncontrado) maxConcursoEncontrado = concurso;
+            if (concurso > maxConcursoEncontrado) {
+				maxConcursoEncontrado = concurso;
+			}
         }
 
         if (nuevasLineas.isEmpty()) {
@@ -112,8 +129,9 @@ public class MelateAutoActualizador {
         List<String[]> filas = new ArrayList<>();
         for (String linea : csv.split("\\R")) {
             linea = linea.trim();
-            if (linea.isEmpty()) continue;
-            if (linea.toUpperCase().startsWith("NPRODUCTO")) continue;
+            if (linea.isEmpty() || linea.toUpperCase().startsWith("NPRODUCTO")) {
+				continue;
+			}
             filas.add(linea.split(","));
         }
         return filas;
@@ -121,9 +139,13 @@ public class MelateAutoActualizador {
 
     static int leerUltimoConcurso() throws IOException {
         Path path = Paths.get(ARCHIVO_MARCADOR);
-        if (!Files.exists(path)) return 0;
+        if (!Files.exists(path)) {
+			return 0;
+		}
         String contenido = Files.readString(path).trim();
-        if (contenido.isEmpty()) return 0;
+        if (contenido.isEmpty()) {
+			return 0;
+		}
         try {
             return Integer.parseInt(contenido);
         } catch (NumberFormatException e) {

@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +53,7 @@ public class AnalizadorParesTrios {
 
     private List<EntradaFrecuencia<List<Integer>>> top(Map<String, Integer> mapa, int n) {
         return mapa.entrySet().stream()
-             	.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())   
+             	.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .limit(n)
                 .map(e -> new EntradaFrecuencia<>(parseClave(e.getKey()), e.getValue()))
                 .toList();

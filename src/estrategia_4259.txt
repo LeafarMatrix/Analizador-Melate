@@ -1,0 +1,31 @@
+============================================================
+  ANALISIS DE FRECUENCIA - SORTEO 4259
+  Generado: 2026-08-30 19:55:30
+  Sorteos historicos analizados: 1
+============================================================
+
+COMBINACION SUGERIDA: [2, 13, 37, 46, 51, 52]
+Suma: 201 | Paridad: 3P / 3I
+
+Metodo: muestreo aleatorio ponderado por frecuencia historica
+de cada numero en 1 sorteos pasados.
+
+Top 10 numeros mas frecuentes en el historico:
+  04 -> 1 veces (100.00%)
+  17 -> 1 veces (100.00%)
+  36 -> 1 veces (100.00%)
+  44 -> 1 veces (100.00%)
+  48 -> 1 veces (100.00%)
+  54 -> 1 veces (100.00%)
+  01 -> 0 veces (0.00%)
+  02 -> 0 veces (0.00%)
+  03 -> 0 veces (0.00%)
+  05 -> 0 veces (0.00%)
+
+------------------------------------------------------------
+AVISO: El Melate es un sorteo aleatorio de extraccion fisica.
+La frecuencia historica de un numero NO influye en el proximo
+sorteo. Esta combinacion no tiene mayor probabilidad de ganar
+que cualquier otra; es solo un criterio de seleccion basado
+en datos reales, en vez de una eleccion puramente al azar.
+------------------------------------------------------------

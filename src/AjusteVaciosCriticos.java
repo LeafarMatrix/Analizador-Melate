@@ -25,7 +25,9 @@ public class AjusteVaciosCriticos implements AjustePeso {
     @Override
     public void aplicar(Map<Integer, Double> pesos, List<Sorteo> historial) {
         int n = historial.size();
-        if (n == 0) return;
+        if (n == 0) {
+			return;
+		}
 
         double huecoEsperado = (double) GeneradorJugadas.TOTAL_NUMEROS
                 / GeneradorJugadas.NUMEROS_POR_SORTEO; // ~9.33 sorteos
@@ -33,7 +35,9 @@ public class AjusteVaciosCriticos implements AjustePeso {
         for (int num = 1; num <= GeneradorJugadas.TOTAL_NUMEROS; num++) {
             int hueco = huecoDesdeUltimaAparicion(num, historial);
             double razon = hueco / huecoEsperado;
-            if (razon <= UMBRAL_SOBRE_ESPERADO) continue;
+            if (razon <= UMBRAL_SOBRE_ESPERADO) {
+				continue;
+			}
             double bonus = Math.min(PESO_EXTRA_MAX, razon - 1.0);
             pesos.merge(num, bonus, Double::sum);
         }
@@ -42,7 +46,9 @@ public class AjusteVaciosCriticos implements AjustePeso {
     /** Sorteos transcurridos (indice 0 = mas reciente) desde la ultima vez que salio el numero. */
     private int huecoDesdeUltimaAparicion(int num, List<Sorteo> historial) {
         for (int i = 0; i < historial.size(); i++) {
-            if (historial.get(i).numeros().contains(num)) return i;
+            if (historial.get(i).numeros().contains(num)) {
+				return i;
+			}
         }
         return historial.size(); // nunca aparecio en el historico cargado
     }

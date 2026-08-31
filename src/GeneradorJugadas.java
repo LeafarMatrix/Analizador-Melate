@@ -86,8 +86,9 @@ public class GeneradorJugadas {
         while (aceptadas.size() < cantidad && intentos < MAX_INTENTOS) {
             intentos++;
             List<Integer> candidata = muestrear(bolsa, ultimoSorteo);
-            if (!cumpleReglas(candidata)) continue;
-            if (!esDiversa(candidata, aceptadas)) continue;
+            if (!cumpleReglas(candidata) || !esDiversa(candidata, aceptadas)) {
+				continue;
+			}
             aceptadas.add(candidata);
         }
 
@@ -151,7 +152,9 @@ public class GeneradorJugadas {
         Set<Integer> setNueva = new TreeSet<>(nueva);
         for (List<Integer> aceptada : aceptadas) {
             long comunes = aceptada.stream().filter(setNueva::contains).count();
-            if (comunes > NUMEROS_POR_SORTEO - minDiferencia) return false;
+            if (comunes > NUMEROS_POR_SORTEO - minDiferencia) {
+				return false;
+			}
         }
         return true;
     }
@@ -159,13 +162,18 @@ public class GeneradorJugadas {
     private List<Integer> construirBolsaPonderada(Map<Integer, Double> pesos) {
         List<Integer> bolsa = new ArrayList<>();
         double max = pesos.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-        if (max <= 0) return bolsa;
+        if (max <= 0) {
+			return bolsa;
+		}
         pesos.forEach((num, peso) -> {
-            if (excluidos.contains(num) && !protegidos.contains(num)) return;
-            if (peso <= 0) return;
+            if ((excluidos.contains(num) && !protegidos.contains(num)) || (peso <= 0)) {
+				return;
+			}
             double normalizado = peso / max;
             int copias = (int) Math.ceil(10 * Math.pow(normalizado, 1.5));
-            for (int i = 0; i < copias; i++) bolsa.add(num);
+            for (int i = 0; i < copias; i++) {
+				bolsa.add(num);
+			}
         });
         return bolsa;
     }
@@ -179,8 +187,12 @@ public class GeneradorJugadas {
         int consecutivos = 0, contiguos = 0;
         for (int i = 0; i < ordenada.size() - 1; i++) {
             int diff = ordenada.get(i + 1) - ordenada.get(i);
-            if (diff == 1) consecutivos++;
-            if (diff <= 2) contiguos++;
+            if (diff == 1) {
+				consecutivos++;
+			}
+            if (diff <= 2) {
+				contiguos++;
+			}
         }
 
         boolean sumaValida    = suma >= sumaMin && suma <= sumaMax;
